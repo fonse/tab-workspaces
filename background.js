@@ -22,6 +22,18 @@ const WorkspaceStorage = {
     });
   },
 
+  async fetchWorkspacesForWindow(windowId) {
+    const key = `windows@${windowId}`;
+    const results = await browser.storage.local.get(key);
+
+    const workspaceIds = results[key] || [];
+    const promises = workspaceIds.map(async workspaceId => {
+      return await WorkspaceStorage.fetchWorkspace(workspaceId);
+    });
+
+    return await Promise.all(promises);
+  },
+
   async registerWorkspaceToWindow(windowId, workspace) {
     const key = `windows@${windowId}`;
     const results = await browser.storage.local.get(key);
@@ -29,7 +41,7 @@ const WorkspaceStorage = {
 
     workspacesForWindow.push(workspace.id);
     await browser.storage.local.set({
-      key: workspacesForWindow
+      [key]: workspacesForWindow
     });
   }
 
@@ -61,19 +73,40 @@ class Workspace {
 
 
 const backgroundLogic = {
-  // TODO
+
   async getWorkspacesForCurrentWindow(){
-    return Promise.resolve([
-      new Workspace("Workspace 1"),
-      new Workspace("Workspace 2"),
-      new Workspace("Workspace 3"),
-    ]);
+    const workspaces = await WorkspaceStorage.fetchWorkspacesForWindow(await backgroundLogic.getCurrentWindowId());
+
+    if (workspaces.length > 0){
+      return workspaces;
+    } else {
+      const defaultWorkspace = await backgroundLogic.createNewWorkspace("Workspace 1");
+
+      return [defaultWorkspace];
+    }
   },
 
+  async createNewWorkspace(workspaceName){
+    const windowId = await backgroundLogic.getCurrentWindowId();
+    console.log("Will create new workspace",workspaceName,"in window", windowId);
+    return await Workspace.create(windowId, workspaceName);
+  },
+
+  async switchToWorkspace(workspaceId) {
+    const tabs = await browser.tabs.query({
+      pinned: false
+    });
+
+    tabs.forEach(tab => {
+      console.log(tab);
+    })
+  },
+
+/*
   async getCurrentTab() {
     const results = await browser.tabs.query({
       active: true,
-      windowId: browser.windows.WINDOW_ID_CURRENT
+      windowId: await backgroundLogic.getCurrentWindowId()
     });
 
     return results[0];
@@ -87,36 +120,31 @@ const backgroundLogic = {
 
   async addTabToWorkspace(tab, workspaceId) {
     console.log("Adding tab", tab, "to", workspaceId);
-  },
-
-  async switchToWorkspace(workspaceId) {
-    const tabs = await browser.tabs.query({
-      pinned: false
-    });
-
-    tabs.forEach(tab => {
-      console.log(tab);
-    })
-  },
-
-  async createNewWorkspace(workspaceName){
-    windowId = (await browser.windows.getCurrent()).id;
-    console.log("Will create new workspace",windowId,workspaceName);
-    const ws = await Workspace.create(windowId, workspaceName);
-    console.log(ws);
   }
+*/
+
+  async getCurrentWindowId() {
+    const currentWindow = await browser.windows.getCurrent();
+
+    return currentWindow.id;
+  }
+
 };
 
 browser.runtime.onMessage.addListener((m) => {
-    switch (m.method) {
-      case "addCurrentTabToWorkspace":
-        backgroundLogic.addCurrentTabToWorkspace(m.workspaceId);
-        break;
-      case "switchToWorkspace":
-        backgroundLogic.switchToWorkspace(m.workspaceId);
-        break;
-      case "createNewWorkspace":
-        backgroundLogic.createNewWorkspace(m.workspaceName);
-        break;
-    }
+  let response;
+
+  switch (m.method) {
+    case "getWorkspacesForCurrentWindow":
+      response = backgroundLogic.getWorkspacesForCurrentWindow();
+      break;
+    case "switchToWorkspace":
+      backgroundLogic.switchToWorkspace(m.workspaceId);
+      break;
+    case "createNewWorkspace":
+      backgroundLogic.createNewWorkspace(m.workspaceName);
+      break;
+  }
+
+  return response;
 });
