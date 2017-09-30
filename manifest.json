@@ -39,6 +39,11 @@
   },
 
   "background": {
-    "scripts": ["background.js"]
+    "scripts": [
+      "background/backgroundLogic.js",
+      "background/workspace.js",
+      "background/workspaceStorage.js",
+      "background/messageHandler.js"
+    ]
   }
 }
