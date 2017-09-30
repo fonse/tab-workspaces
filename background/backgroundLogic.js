@@ -27,6 +27,8 @@ const BackgroundLogic = {
 
     const workspace = await Workspace.create(windowId, workspaceName, active || false);
     BackgroundLogic.switchToWorkspace(workspace.id);
+
+    return workspace;
   },
 
   async switchToWorkspace(workspaceId) {
