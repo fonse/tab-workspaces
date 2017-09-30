@@ -140,7 +140,8 @@ const BackgroundLogic = {
   async createNewWorkspace(workspaceName, active){
     const windowId = await BackgroundLogic.getCurrentWindowId();
 
-    return await Workspace.create(windowId, workspaceName, active || false);
+    const workspace = await Workspace.create(windowId, workspaceName, active || false);
+    BackgroundLogic.switchToWorkspace(workspace.id);
   },
 
   async switchToWorkspace(workspaceId) {
