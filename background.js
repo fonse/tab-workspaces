@@ -72,22 +72,22 @@ class Workspace {
 
 
 
-const backgroundLogic = {
+const BackgroundLogic = {
 
   async getWorkspacesForCurrentWindow(){
-    const workspaces = await WorkspaceStorage.fetchWorkspacesForWindow(await backgroundLogic.getCurrentWindowId());
+    const workspaces = await WorkspaceStorage.fetchWorkspacesForWindow(await BackgroundLogic.getCurrentWindowId());
 
     if (workspaces.length > 0){
       return workspaces;
     } else {
-      const defaultWorkspace = await backgroundLogic.createNewWorkspace("Workspace 1");
+      const defaultWorkspace = await BackgroundLogic.createNewWorkspace("Workspace 1");
 
       return [defaultWorkspace];
     }
   },
 
   async createNewWorkspace(workspaceName){
-    const windowId = await backgroundLogic.getCurrentWindowId();
+    const windowId = await BackgroundLogic.getCurrentWindowId();
     console.log("Will create new workspace",workspaceName,"in window", windowId);
     return await Workspace.create(windowId, workspaceName);
   },
@@ -106,16 +106,16 @@ const backgroundLogic = {
   async getCurrentTab() {
     const results = await browser.tabs.query({
       active: true,
-      windowId: await backgroundLogic.getCurrentWindowId()
+      windowId: await BackgroundLogic.getCurrentWindowId()
     });
 
     return results[0];
   },
 
   async addCurrentTabToWorkspace(workspaceId) {
-    const tab = await backgroundLogic.getCurrentTab();
+    const tab = await BackgroundLogic.getCurrentTab();
 
-    backgroundLogic.addTabToWorkspace(tab, workspaceId);
+    BackgroundLogic.addTabToWorkspace(tab, workspaceId);
   },
 
   async addTabToWorkspace(tab, workspaceId) {
@@ -136,13 +136,13 @@ browser.runtime.onMessage.addListener((m) => {
 
   switch (m.method) {
     case "getWorkspacesForCurrentWindow":
-      response = backgroundLogic.getWorkspacesForCurrentWindow();
+      response = BackgroundLogic.getWorkspacesForCurrentWindow();
       break;
     case "switchToWorkspace":
-      backgroundLogic.switchToWorkspace(m.workspaceId);
+      BackgroundLogic.switchToWorkspace(m.workspaceId);
       break;
     case "createNewWorkspace":
-      backgroundLogic.createNewWorkspace(m.workspaceName);
+      BackgroundLogic.createNewWorkspace(m.workspaceName);
       break;
   }
 
