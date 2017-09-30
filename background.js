@@ -6,7 +6,7 @@ const WorkspaceStorage = {
 
     if (results[key]){
       const state = results[key];
-      return new Workspace(workspaceId, state.name, state.hiddenTabs);
+      return new Workspace(workspaceId, state.name, state.active, state.hiddenTabs);
     } else {
       return null;
     }
@@ -17,6 +17,7 @@ const WorkspaceStorage = {
     await browser.storage.local.set({
       [key]: {
         name: workspace.name,
+        active: workspace.active,
         hiddenTabs: workspace.hiddenTabs
       }
     });
@@ -48,18 +49,58 @@ const WorkspaceStorage = {
 }
 
 class Workspace {
-  constructor(id, name, hiddenTabs) {
+  constructor(id, name, active, hiddenTabs) {
     this.id = id;
     this.name = name;
+    this.active = active;
     this.hiddenTabs = hiddenTabs;
   }
 
-  static async create(windowId, name) {
-    const workspace = new Workspace(Workspace.generateId(), name, []);
+  static async create(windowId, name, active) {
+    const workspace = new Workspace(Workspace.generateId(), name, active || false, []);
     await WorkspaceStorage.storeWorkspaceState(workspace);
     await WorkspaceStorage.registerWorkspaceToWindow(windowId, workspace);
 
     return workspace;
+  }
+
+  async hide(windowId){
+    const tabs = await browser.tabs.query({
+      windowId: windowId,
+      pinned: false
+    });
+
+    // Store hidden status in storage
+    tabs.forEach(tab => {
+      const tabObject = Object.assign({}, tab);
+      // tabObject.active = false;
+      // tabObject.hiddenState = true;
+
+      this.hiddenTabs.push(tabObject);
+    })
+
+    this.active = false;
+    await WorkspaceStorage.storeWorkspaceState(this);
+
+    // Then remove the tags from the window
+    const tabIds = tabs.map(tab => tab.id);
+    browser.tabs.remove(tabIds);
+  }
+
+  async show(windowId){
+    const promises = this.hiddenTabs.map(tabObject => {
+      return browser.tabs.create({
+        url: tabObject.url,
+        active: tabObject.active,
+        windowId: windowId
+      });
+    });
+
+    await Promise.all(promises);
+
+    this.hiddenTabs = [];
+    this.active = true;
+    await WorkspaceStorage.storeWorkspaceState(this);
   }
 
   static generateId() {
@@ -75,53 +116,47 @@ class Workspace {
 const BackgroundLogic = {
 
   async getWorkspacesForCurrentWindow(){
-    const workspaces = await WorkspaceStorage.fetchWorkspacesForWindow(await BackgroundLogic.getCurrentWindowId());
+    return await BackgroundLogic.getWorkspacesForWindow(await BackgroundLogic.getCurrentWindowId());
+  },
+
+  async getWorkspacesForWindow(windowId){
+    const workspaces = await WorkspaceStorage.fetchWorkspacesForWindow(windowId);
 
     if (workspaces.length > 0){
       return workspaces;
     } else {
-      const defaultWorkspace = await BackgroundLogic.createNewWorkspace("Workspace 1");
+      const defaultWorkspace = await BackgroundLogic.createNewWorkspace("Workspace 1", true);
 
       return [defaultWorkspace];
     }
   },
 
-  async createNewWorkspace(workspaceName){
+  async getCurrentWorkspaceForWindow(windowId) {
+    const workspaces = await BackgroundLogic.getWorkspacesForWindow(windowId);
+
+    return workspaces.filter(workspace => workspace.active)[0];
+  },
+
+  async createNewWorkspace(workspaceName, active){
     const windowId = await BackgroundLogic.getCurrentWindowId();
-    console.log("Will create new workspace",workspaceName,"in window", windowId);
-    return await Workspace.create(windowId, workspaceName);
+
+    return await Workspace.create(windowId, workspaceName, active || false);
   },
 
   async switchToWorkspace(workspaceId) {
-    const tabs = await browser.tabs.query({
-      pinned: false
-    });
+    const windowId = await BackgroundLogic.getCurrentWindowId();
 
-    tabs.forEach(tab => {
-      console.log(tab);
-    })
+    const oldWorkspace = await BackgroundLogic.getCurrentWorkspaceForWindow(windowId);
+    const newWorkspace = await WorkspaceStorage.fetchWorkspace(workspaceId);
+
+    if (oldWorkspace.id == newWorkspace.id){
+      // Nothing to do here
+      return;
+    }
+
+    oldWorkspace.hide(windowId);
+    newWorkspace.show(windowId);
   },
-
-/*
-  async getCurrentTab() {
-    const results = await browser.tabs.query({
-      active: true,
-      windowId: await BackgroundLogic.getCurrentWindowId()
-    });
-
-    return results[0];
-  },
-
-  async addCurrentTabToWorkspace(workspaceId) {
-    const tab = await BackgroundLogic.getCurrentTab();
-
-    BackgroundLogic.addTabToWorkspace(tab, workspaceId);
-  },
-
-  async addTabToWorkspace(tab, workspaceId) {
-    console.log("Adding tab", tab, "to", workspaceId);
-  }
-*/
 
   async getCurrentWindowId() {
     const currentWindow = await browser.windows.getCurrent();
