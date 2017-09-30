@@ -36,6 +36,9 @@ const Logic = {
     workspaces.forEach(workspace => {
       const li = document.createElement("li");
       li.classList.add("js-switch-workspace");
+      if (workspace.active){
+        li.classList.add("active");
+      }
       li.textContent = workspace.name;
       li.dataset.workspaceId = workspace.id;
       fragment.appendChild(li);
