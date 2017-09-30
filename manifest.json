@@ -5,35 +5,20 @@
 
   "description": "Organize your tabs into workspaces. Switch between workspaces to change which tabs are displayed at the moment.",
   "icons": {
-    "48": "img/container-site-d-48.png",
-    "96": "img/container-site-d-96.png"
-  },
-
-  "applications": {
-    "gecko": {
-      "strict_min_version": "53.0"
-    }
+    "48": "icons/container-site-d-48.png",
+    "96": "icons/container-site-d-96.png"
   },
 
   "homepage_url": "https://fonse.github.com/tab-workspaces",
 
   "permissions": [
-    "<all_urls>",
-    "activeTab",
-    "cookies",
-    "contextMenus",
-    "contextualIdentities",
-    "history",
-    "idle",
     "storage",
-    "tabs",
-    "webRequestBlocking",
-    "webRequest"
+    "tabs"
   ],
 
   "browser_action": {
     "browser_style": true,
-    "default_icon": "img/container-site.svg",
+    "default_icon": "icons/container-site.svg",
     "default_title": "Workspaces",
     "default_popup": "popup/popup.html"
   },
