@@ -14,31 +14,39 @@ class Workspace {
     return workspace;
   }
 
-  async hide(windowId){
+  // Store hidden tabs in storage
+  async prepareToHide(windowId){
     const tabs = await browser.tabs.query({
       windowId: windowId,
       pinned: false
     });
 
-    // Store hidden status in storage
     tabs.forEach(tab => {
       const tabObject = Object.assign({}, tab);
-      // tabObject.active = false;
-      // tabObject.hiddenState = true;
-
       this.hiddenTabs.push(tabObject);
     })
+  }
 
+  // Then remove the tabs from the window
+  async hide(windowId){
     this.active = false;
     await WorkspaceStorage.storeWorkspaceState(this);
 
-    // Then remove the tags from the window
-    const tabIds = tabs.map(tab => tab.id);
+    const tabIds = this.hiddenTabs.map(tab => tab.id);
     browser.tabs.remove(tabIds);
   }
 
   async show(windowId){
-    const promises = this.hiddenTabs.map(tabObject => {
+    const tabs = this.hiddenTabs.filter(tabObject => this.isPermissibleURL(tabObject.url));
+
+    if (tabs.length == 0){
+      tabs.push({
+        url: null,
+        active: true
+      });
+    }
+
+    const promises = tabs.map(tabObject => {
       return browser.tabs.create({
         url: tabObject.url,
         active: tabObject.active,
@@ -51,6 +59,16 @@ class Workspace {
     this.hiddenTabs = [];
     this.active = true;
     await WorkspaceStorage.storeWorkspaceState(this);
+  }
+
+  // Is the url compatible with the tabs.create API?
+  isPermissibleURL(url) {
+    const protocol = new URL(url).protocol;
+    if (protocol === "about:" || protocol === "chrome:" || protocol === "moz-extension:") {
+      return false;
+    }
+
+    return true;
   }
 
   static generateId() {

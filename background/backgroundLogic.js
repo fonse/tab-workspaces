@@ -40,8 +40,11 @@ const BackgroundLogic = {
       return;
     }
 
-    oldWorkspace.hide(windowId);
-    newWorkspace.show(windowId);
+    // Since we're gonna be closing all open tabs, we need to show the new ones first.
+    // However, we first need to prepare the old one, so it can tell which tabs were the original ones and which were opened by the new workspace.
+    await oldWorkspace.prepareToHide(windowId);
+    await newWorkspace.show(windowId);
+    await oldWorkspace.hide(windowId);
   },
 
   async getCurrentWindowId() {
