@@ -1,0 +1,105 @@
+/* General Rules and Resets */
+* {
+  font-size: inherit;
+  margin-block-end: 0;
+  margin-block-start: 0;
+  margin-inline-end: 0;
+  margin-inline-start: 0;
+  padding-block-end: 0;
+  padding-block-start: 0;
+  padding-inline-end: 0;
+  padding-inline-start: 0;
+}
+
+html {
+  background-color: #fefefe;
+  box-sizing: border-box;
+  font-size: 12px;
+}
+
+body {
+  font-family: Roboto, Noto, "San Francisco", Ubuntu, "Segoe UI", "Fira Sans", message-box, Arial, sans-serif;
+  inline-size: 300px;
+  max-inline-size: 300px;
+}
+
+:root {
+  --primary-action-color: #248aeb;
+  --title-text-color: #000;
+  --text-normal-color: #4a4a4a;
+  --text-heading-color: #000;
+
+  /* calculated from 12px */
+  --font-size-heading: 1.33rem; /* 16px */
+  --block-line-space-size: 0.5rem; /* 6px */
+  --inline-item-space-size: 0.5rem; /* 6px */
+  --block-line-separation-size: 0.33rem; /* 10px */
+  --inline-icon-space-size: 0.833rem; /* 10px */
+
+  /* Use for url and icon size */
+  --block-url-label-size: 2rem; /* 24px */
+  --inline-start-size: 1.66rem; /* 20px */
+  --inline-button-size: 5.833rem; /* 70px */
+  --icon-size: 1.166rem; /* 14px */
+
+  --small-text-size: 0.833rem; /* 10px */
+  --small-radius: 3px;
+  --icon-button-size: calc(calc(var(--block-line-separation-size) * 2) + 1.66rem); /* 20px */
+}
+
+@media (min-resolution: 1dppx) {
+  html {
+    font-size: 14px;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+}
+
+form {
+  margin-block-end: 0;
+  margin-block-start: 0;
+  margin-inline-end: 0;
+  margin-inline-start: 0;
+}
+
+table {
+  border: 0;
+  border-spacing: 0;
+  inline-size: 100%;
+  margin-block-end: 0;
+  margin-block-start: 0;
+  margin-inline-end: 0;
+  margin-inline-start: 0;
+}
+
+.title {
+  padding: 5px 20px;
+  font-weight: bold;
+  border-bottom: 1px solid #efefef;
+}
+
+ul{
+  list-style: none;
+}
+
+li {
+  padding: 10px 20px;
+  border-bottom: 1px solid #efefef;
+  cursor:pointer;
+}
+
+li:hover {
+  background: #efefef;
+}
+
+.new-workspace{
+  display:block;
+  padding: 5px 20px;
+  background: #ccc;
+  color: inherit;
+  text-decoration: none;
+}
