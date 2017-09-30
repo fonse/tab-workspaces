@@ -1,3 +1,40 @@
+const WorkspaceStorage = {
+
+  async fetchWorkspace(workspaceId) {
+    const key = `workspaces@${workspaceId}`;
+    const results = await browser.storage.local.get(key);
+
+    if (results[key]){
+      const state = results[key];
+      return new Workspace(workspaceId, state.name, state.hiddenTabs);
+    } else {
+      return null;
+    }
+  },
+
+  async storeWorkspaceState(workspace) {
+    const key = `workspaces@${workspace.id}`;
+    await browser.storage.local.set({
+      [key]: {
+        name: workspace.name,
+        hiddenTabs: workspace.hiddenTabs
+      }
+    });
+  },
+
+  async registerWorkspaceToWindow(windowId, workspace) {
+    const key = `windows@${windowId}`;
+    const results = await browser.storage.local.get(key);
+    const workspacesForWindow = results[key] || [];
+
+    workspacesForWindow.push(workspace.id);
+    await browser.storage.local.set({
+      key: workspacesForWindow
+    });
+  }
+
+}
+
 class Workspace {
   constructor(id, name, hiddenTabs) {
     this.id = id;
@@ -5,43 +42,12 @@ class Workspace {
     this.hiddenTabs = hiddenTabs;
   }
 
-  async save() {
-    const workspaceKey = `workspaces@${this.id}`;
-    await browser.storage.local.set({
-      [workspaceKey]: {
-        name: this.name,
-        hiddenTabs: this.hiddenTabs
-      }
-    });
-
-    // TODO Replace with current window
-    const windowKey = "window@todo";
-    const results = await browser.storage.local.get(windowKey);
-    const workspacesForWindow = results[windowKey] || [];
-
-    workspacesForWindow.push(this.id);
-    await browser.storage.local.set({
-      windowKey: workspacesForWindow
-    });
-  }
-
-  static async create(name) {
+  static async create(windowId, name) {
     const workspace = new Workspace(Workspace.generateId(), name, []);
-    await workspace.save();
+    await WorkspaceStorage.storeWorkspaceState(workspace);
+    await WorkspaceStorage.registerWorkspaceToWindow(windowId, workspace);
 
     return workspace;
-  }
-
-  static async find(id) {
-    const key = `workspaces@${id}`;
-    const results = await browser.storage.local.get(key);
-
-    if (results[key]){
-      const state = results[key];
-      return new Workspace(id, state.name, state.hiddenTabs);
-    } else {
-      return null;
-    }
   }
 
   static generateId() {
@@ -94,8 +100,9 @@ const backgroundLogic = {
   },
 
   async createNewWorkspace(workspaceName){
-    console.log("Will create new workspace",workspaceName);
-    const ws = await Workspace.create(workspaceName);
+    windowId = (await browser.windows.getCurrent()).id;
+    console.log("Will create new workspace",windowId,workspaceName);
+    const ws = await Workspace.create(windowId, workspaceName);
     console.log(ws);
   }
 };

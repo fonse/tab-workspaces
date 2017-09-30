@@ -8,7 +8,6 @@ document.addEventListener("click", (e) => {
     window.close();
 
   } else if (e.target.classList.contains("js-new-workspace")) {
-    // TODO replace later
     browser.runtime.sendMessage({
       method: "createNewWorkspace",
       workspaceName: "New Workspace"
