@@ -7,7 +7,12 @@ const BackgroundLogic = {
 
   initializeListeners(){
     browser.windows.onRemoved.addListener(BackgroundLogic.tearDownWindow);
-    browser.windows.onFocusChanged.addListener(BackgroundLogic.updateContextMenu);
+
+    browser.windows.onFocusChanged.addListener(windowId => {
+      if (windowId != browser.windows.WINDOW_ID_NONE){
+        BackgroundLogic.updateContextMenu();
+      }
+    });
   },
 
   async getWorkspacesForCurrentWindow(){
@@ -38,6 +43,9 @@ const BackgroundLogic = {
     const workspace = await Workspace.create(windowId, workspaceName, active || false);
     BackgroundLogic.switchToWorkspace(workspace.id);
 
+    // Re-render context menu
+    BackgroundLogic.updateContextMenu();
+
     return workspace;
   },
 
@@ -63,6 +71,9 @@ const BackgroundLogic = {
     const workspace = await WorkspaceStorage.fetchWorkspace(workspaceId);
 
     await workspace.rename(workspaceName);
+
+    // Re-render context menu
+    BackgroundLogic.updateContextMenu();
   },
 
   async deleteWorkspace(workspaceId) {
@@ -76,6 +87,9 @@ const BackgroundLogic = {
     }
 
     await workspaceToDelete.delete(windowId);
+
+    // Re-render context menu
+    BackgroundLogic.updateContextMenu();
   },
 
   tearDownWindow(windowId) {
