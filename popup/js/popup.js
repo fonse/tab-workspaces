@@ -1,12 +1,17 @@
 const Logic = {
 
-  init(){
-    Logic.renderPopup();
+  workspaces: [],
 
-    Logic.registerClickHandler();
+  async init(){
+    // We need the workspaces for rendering, so wait for this one
+    await Logic.fetchWorkspaces();
+
+    Logic.renderWorkspacesList();
+    Logic.renderWorkspacesEdit();
+    Logic.registerEventListeners();
   },
 
-  registerClickHandler() {
+  registerEventListeners() {
     document.addEventListener("click", (e) => {
       if (e.target.classList.contains("js-switch-workspace")) {
         var workspaceId = e.target.dataset.workspaceId;
@@ -25,17 +30,60 @@ const Logic = {
         });
 
         window.close();
+
+      } else if (e.target.classList.contains("js-switch-panel")) {
+        document.querySelectorAll(".container").forEach(el => el.classList.toggle("hide"));
+
+      } else if (e.target.classList.contains("js-edit-workspace")) {
+        const input = e.target.parentNode.childNodes[0];
+        input.disabled = false;
+        input.focus();
+
+      } else if (e.target.classList.contains("js-delete-workspace")) {
+        const workspaceId = e.target.parentNode.dataset.workspaceId;
+        // TODO Delete
+      }
+    });
+
+    document.addEventListener("change", (e) => {
+      if (e.target.classList.contains("js-edit-workspace-input")) {
+        const name = e.target.value;
+        e.target.disabled = true;
+
+        const workspaceId = e.target.parentNode.dataset.workspaceId;
+        // TODO Rename
       }
     });
   },
 
-  async renderPopup() {
-    const workspaces = await Logic.callBackground("getWorkspacesForCurrentWindow");
+  async fetchWorkspaces() {
+    // this.workspaces = await Logic.callBackground("getWorkspacesForCurrentWindow");
 
+    this.workspaces = [
+      {
+        id: "1",
+        name: "Workspace 1",
+        active: true
+      },
+      {
+        id: "2",
+        name: "Workspace 1",
+        active: false
+      },
+      {
+        id: "3",
+        name: "Workspace 3",
+        active: false
+      },
+    ];
+  },
+
+  async renderWorkspacesList() {
     const fragment = document.createDocumentFragment();
-    workspaces.forEach(workspace => {
+
+    this.workspaces.forEach(workspace => {
       const li = document.createElement("li");
-      li.classList.add("js-switch-workspace");
+      li.classList.add("workspace-list-entry", "js-switch-workspace");
       if (workspace.active){
         li.classList.add("active");
       }
@@ -45,6 +93,39 @@ const Logic = {
     });
 
     const list = document.querySelector("#workspace-list");
+    list.innerHTML = '';
+    list.appendChild(fragment);
+  },
+
+  async renderWorkspacesEdit() {
+    const fragment = document.createDocumentFragment();
+
+    this.workspaces.forEach(workspace => {
+      const li = document.createElement("li");
+      li.classList.add("workspace-edit-entry");
+      li.dataset.workspaceId = workspace.id;
+
+      const input = document.createElement("input");
+      input.classList.add("js-edit-workspace-input");
+      input.type = "text";
+      input.value = workspace.name;
+      input.disabled = true;
+      li.appendChild(input);
+
+      const renameBtn = document.createElement("a");
+      renameBtn.classList.add("edit-button", "edit-button-rename", "js-edit-workspace");
+      renameBtn.href = "#";
+      li.appendChild(renameBtn);
+
+      const deleteBtn = document.createElement("a");
+      deleteBtn.classList.add("edit-button", "edit-button-delete", "js-delete-workspace");
+      deleteBtn.href = "#";
+      li.appendChild(deleteBtn);
+
+      fragment.appendChild(li);
+    });
+
+    const list = document.querySelector("#workspace-edit");
     list.innerHTML = '';
     list.appendChild(fragment);
   },

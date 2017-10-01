@@ -5,13 +5,23 @@
     <link rel="stylesheet" href="css/popup.css">
   </head>
   <body>
-    <div class="container">
+    <div class="container" id="workspace-list-container">
       <div class="title">Workspaces</div>
       <ul id="workspace-list">
         <!-- Populated with js -->
       </ul>
+
+      <a href="#" class="new-workspace js-switch-panel">Edit workspaces</a>
     </div>
-    <a href="#" class="new-workspace js-new-workspace">New workspace</a>
+
+    <div class="container hide" id="workspace-edit-container">
+      <div class="title">Workspaces</div>
+      <ul id="workspace-edit">
+        <!-- Populated with js -->
+      </ul>
+
+      <a href="#" class="new-workspace js-switch-panel">Stop editing</a>
+    </div>
 
     <script src="js/popup.js"></script>
   </body>
