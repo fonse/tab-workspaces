@@ -11,6 +11,12 @@ browser.runtime.onMessage.addListener((m) => {
     case "createNewWorkspace":
       BackgroundLogic.createNewWorkspace(m.workspaceName);
       break;
+    case "renameWorkspace":
+      BackgroundLogic.renameWorkspace(m.workspaceId, m.workspaceName);
+      break;
+    case "deleteWorkspace":
+      BackgroundLogic.deleteWorkspace(m.workspaceId);
+      break;
   }
 
   return response;

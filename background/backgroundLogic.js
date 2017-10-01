@@ -49,6 +49,16 @@ const BackgroundLogic = {
     await oldWorkspace.hide(windowId);
   },
 
+  async renameWorkspace(workspaceId, workspaceName) {
+    const workspace = await WorkspaceStorage.fetchWorkspace(workspaceId);
+
+    await workspace.rename(workspaceName);
+  },
+
+  async deleteWorkspace(workspaceId) {
+    console.log("About to delete",workspaceId);
+  },
+
   async getCurrentWindowId() {
     const currentWindow = await browser.windows.getCurrent();
 

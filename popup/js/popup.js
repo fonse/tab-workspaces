@@ -12,7 +12,7 @@ const Logic = {
   },
 
   registerEventListeners() {
-    document.addEventListener("click", (e) => {
+    document.addEventListener("click", e => {
       if (e.target.classList.contains("js-switch-workspace")) {
         var workspaceId = e.target.dataset.workspaceId;
         Logic.callBackground("switchToWorkspace", {
@@ -41,41 +41,34 @@ const Logic = {
 
       } else if (e.target.classList.contains("js-delete-workspace")) {
         const workspaceId = e.target.parentNode.dataset.workspaceId;
-        // TODO Delete
+        Logic.callBackground("deleteWorkspace", {
+          workspaceId: workspaceId
+        });
       }
     });
 
-    document.addEventListener("change", (e) => {
+    document.addEventListener("change", async e => {
       if (e.target.classList.contains("js-edit-workspace-input")) {
+        // Re-disable the input
         const name = e.target.value;
         e.target.disabled = true;
 
+        // Save new name
         const workspaceId = e.target.parentNode.dataset.workspaceId;
-        // TODO Rename
+        await Logic.callBackground("renameWorkspace", {
+          workspaceId: workspaceId,
+          workspaceName: name
+        });
+
+        // And re-render the list panel
+        await Logic.fetchWorkspaces();
+        Logic.renderWorkspacesList();
       }
     });
   },
 
   async fetchWorkspaces() {
-    // this.workspaces = await Logic.callBackground("getWorkspacesForCurrentWindow");
-
-    this.workspaces = [
-      {
-        id: "1",
-        name: "Workspace 1",
-        active: true
-      },
-      {
-        id: "2",
-        name: "Workspace 1",
-        active: false
-      },
-      {
-        id: "3",
-        name: "Workspace 3",
-        active: false
-      },
-    ];
+    this.workspaces = await Logic.callBackground("getWorkspacesForCurrentWindow");
   },
 
   async renderWorkspacesList() {

@@ -14,6 +14,11 @@ class Workspace {
     return workspace;
   }
 
+  async rename(newName){
+    this.name = newName;
+    await WorkspaceStorage.storeWorkspaceState(this);
+  }
+
   // Store hidden tabs in storage
   async prepareToHide(windowId){
     const tabs = await browser.tabs.query({

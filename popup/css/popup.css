@@ -140,10 +140,35 @@ li.workspace-edit-entry a.edit-button-delete {
   background: url("../img/delete.svg");
 }
 
-.new-workspace{
-  display:block;
+.footer {
+  display: inline-block;
+  vertical-align: top;
   padding: 5px 20px;
-  background: #ccc;
+  background: #e0e0e0;
   color: inherit;
   text-decoration: none;
+  line-height: 20px;
+}
+
+.footer:hover{
+  background: #bbb;
+}
+
+.footer.full-width {
+  width: 100%;
+}
+
+.footer.split-large {
+  width: 270px;
+  border-right: 1px solid #ccc;
+}
+
+.footer.split-small {
+  width: 30px;
+  height: 30px;
+  padding:0;
+  background-image: url("../img/create.svg");
+  background-size: 16px;
+  background-repeat: no-repeat;
+  background-position: center;
 }
