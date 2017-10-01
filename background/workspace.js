@@ -14,13 +14,13 @@ class Workspace {
     return workspace;
   }
 
-  async rename(newName){
+  async rename(newName) {
     this.name = newName;
     await WorkspaceStorage.storeWorkspaceState(this);
   }
 
   // Store hidden tabs in storage
-  async prepareToHide(windowId){
+  async prepareToHide(windowId) {
     const tabs = await browser.tabs.query({
       windowId: windowId,
       pinned: false
@@ -33,7 +33,7 @@ class Workspace {
   }
 
   // Then remove the tabs from the window
-  async hide(windowId){
+  async hide(windowId) {
     this.active = false;
     await WorkspaceStorage.storeWorkspaceState(this);
 
@@ -41,7 +41,7 @@ class Workspace {
     browser.tabs.remove(tabIds);
   }
 
-  async show(windowId){
+  async show(windowId) {
     const tabs = this.hiddenTabs.filter(tabObject => Util.isPermissibleURL(tabObject.url));
 
     if (tabs.length == 0){
@@ -67,19 +67,40 @@ class Workspace {
   }
 
   // Then remove the tabs from the window
-  async delete(windowId){
+  async delete(windowId) {
     await WorkspaceStorage.deleteWorkspaceState(this.id);
     await WorkspaceStorage.unregisterWorkspaceToWindow(windowId, this.id);
   }
 
-  async attachTab(tab){
+  async attachTab(tab) {
     const tabObject = Object.assign({}, tab);
     this.hiddenTabs.push(tabObject);
 
     await WorkspaceStorage.storeWorkspaceState(this);
   }
 
-  async detachTab(tab){
-    await browser.tabs.remove(tab.id);
+  async detachTab(tab) {
+    // We need to refresh the state because if the active workspace was switched we might have an old reference
+    await this.refreshState();
+
+    if (this.active){
+      // If the workspace is currently active, simply remove the tab.
+      await browser.tabs.remove(tab.id);
+    } else {
+      // Otherwise, forget it from hiddenTabs
+      const index = this.hiddenTabs.findIndex(tabObject => tabObject.id == tab.id);
+      if (index > -1){
+        this.hiddenTabs.splice(index, 1);
+        await WorkspaceStorage.storeWorkspaceState(this);
+      }
+    }
+  }
+
+  async refreshState() {
+    const state = await WorkspaceStorage.fetchWorkspaceState(this.id);
+
+    this.name = state.name;
+    this.active = state.active;
+    this.hiddenTabs = state.hiddenTabs;
   }
 }

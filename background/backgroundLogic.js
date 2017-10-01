@@ -123,9 +123,21 @@ const BackgroundLogic = {
     const destinationWorkspace = await WorkspaceStorage.fetchWorkspace(menu.menuItemId);
     const currentWorkspace = await BackgroundLogic.getCurrentWorkspaceForWindow(windowId);
 
-    // TODO What if it's the last tab left?
-    destinationWorkspace.attachTab(tab);
-    currentWorkspace.detachTab(tab);
+    // Attach tab to destination workspace
+    await destinationWorkspace.attachTab(tab);
+
+    // If this is the last tab of the window, we need to switch workspaces
+    const tabsInCurrentWindow = await browser.tabs.query({
+      windowId: windowId,
+      pinned: false
+    });
+
+    if (tabsInCurrentWindow.length == 1){
+      await BackgroundLogic.switchToWorkspace(destinationWorkspace.id);
+    }
+
+    // Finally, detach tab from source workspace
+    await currentWorkspace.detachTab(tab);
   }
 
 };

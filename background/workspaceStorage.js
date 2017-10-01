@@ -1,5 +1,6 @@
 const WorkspaceStorage = {
 
+  // Deprecated
   async fetchWorkspace(workspaceId) {
     const key = `workspaces@${workspaceId}`;
     const results = await browser.storage.local.get(key);
@@ -9,6 +10,17 @@ const WorkspaceStorage = {
       return new Workspace(workspaceId, state.name, state.active, state.hiddenTabs);
     } else {
       return null;
+    }
+  },
+
+  async fetchWorkspaceState(workspaceId) {
+    const key = `workspaces@${workspaceId}`;
+    const results = await browser.storage.local.get(key);
+
+    if (results[key]){
+      return results[key];
+    } else {
+      throw `Workspace ${workspaceId} has no state.`;
     }
   },
 
