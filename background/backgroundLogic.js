@@ -25,7 +25,7 @@ const BackgroundLogic = {
     if (workspaces.length > 0){
       return workspaces;
     } else {
-      const defaultWorkspace = await BackgroundLogic.createNewWorkspace("Workspace 1", true);
+      const defaultWorkspace = await BackgroundLogic.createNewWorkspace(true);
 
       return [defaultWorkspace];
     }
@@ -37,16 +37,21 @@ const BackgroundLogic = {
     return workspaces.find(workspace => workspace.active);
   },
 
-  async createNewWorkspace(workspaceName, active){
+  async createNewWorkspace(active){
     const windowId = await BackgroundLogic.getCurrentWindowId();
+    const nextNumber = (await WorkspaceStorage.fetchWorkspacesCountForWindow(windowId)) + 1;
 
-    const workspace = await Workspace.create(windowId, workspaceName, active || false);
-    BackgroundLogic.switchToWorkspace(workspace.id);
+    const workspace = await Workspace.create(windowId, `Workspace ${nextNumber}`, active || false);
 
     // Re-render context menu
     BackgroundLogic.updateContextMenu();
 
     return workspace;
+  },
+
+  async createNewWorkspaceAndSwitch(active){
+    const workspace = await BackgroundLogic.createNewWorkspace(active);
+    await BackgroundLogic.switchToWorkspace(workspace.id);
   },
 
   async switchToWorkspace(workspaceId) {
@@ -133,12 +138,10 @@ const BackgroundLogic = {
     });
   },
 
-  async updateContextMenu(windowId) {
-    if (windowId != browser.windows.WINDOW_ID_NONE){
-      await browser.menus.removeAll();
-      await BackgroundLogic.initializeContextMenu();
-    }
-  },
+  updateContextMenu: Util.debounce(async () => {
+    await browser.menus.removeAll();
+    await BackgroundLogic.initializeContextMenu();
+  }, 250),
 
   async handleContextMenuClick(menu, tab) {
     const windowId = await BackgroundLogic.getCurrentWindowId();
@@ -146,7 +149,7 @@ const BackgroundLogic = {
     var destinationWorkspace;
 
     if (menu.menuItemId.substring(0,3) == "new"){
-      destinationWorkspace = await Workspace.create(windowId, "New Workspace", false);
+      destinationWorkspace = await BackgroundLogic.createNewWorkspace(false);
     } else {
       destinationWorkspace = await WorkspaceStorage.fetchWorkspace(menu.menuItemId);
     }

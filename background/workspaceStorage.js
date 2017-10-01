@@ -40,6 +40,15 @@ const WorkspaceStorage = {
     await browser.storage.local.remove(key);
   },
 
+  async fetchWorkspacesCountForWindow(windowId) {
+    const key = `windows@${windowId}`;
+    const results = await browser.storage.local.get(key);
+
+    const workspaceIds = results[key] || [];
+
+    return workspaceIds.length;
+  },
+
   async fetchWorkspacesForWindow(windowId) {
     const key = `windows@${windowId}`;
     const results = await browser.storage.local.get(key);

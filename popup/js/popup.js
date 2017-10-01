@@ -22,12 +22,7 @@ const Logic = {
         window.close();
 
       } else if (e.target.classList.contains("js-new-workspace")) {
-        const list = document.querySelector("#workspace-list");
-        const nextNumber = list.childNodes.length + 1;
-
-        Logic.callBackground("createNewWorkspace", {
-          workspaceName: `Workspace ${nextNumber}`
-        });
+        Logic.callBackground("createNewWorkspaceAndSwitch");
 
         window.close();
 
