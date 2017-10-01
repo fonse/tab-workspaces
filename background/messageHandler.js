@@ -8,8 +8,8 @@ browser.runtime.onMessage.addListener(async m => {
     case "switchToWorkspace":
       await BackgroundLogic.switchToWorkspace(m.workspaceId);
       break;
-    case "createNewWorkspace":
-      await BackgroundLogic.createNewWorkspace(m.workspaceName);
+    case "createNewWorkspaceAndSwitch":
+      await BackgroundLogic.createNewWorkspaceAndSwitch();
       break;
     case "renameWorkspace":
       await BackgroundLogic.renameWorkspace(m.workspaceId, m.workspaceName);

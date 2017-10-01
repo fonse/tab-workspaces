@@ -7,20 +7,27 @@ class Workspace {
   }
 
   static async create(windowId, name, active) {
-    const workspace = new Workspace(Workspace.generateId(), name, active || false, []);
-    await WorkspaceStorage.storeWorkspaceState(workspace);
+    const workspace = new Workspace(Util.generateUUID(), name, active || false, []);
+    await workspace.storeState();
     await WorkspaceStorage.registerWorkspaceToWindow(windowId, workspace.id);
 
     return workspace;
   }
 
-  async rename(newName){
+  static async find(workspaceId) {
+    const workspace = new Workspace(workspaceId);
+    await workspace.refreshState();
+
+    return workspace;
+  }
+
+  async rename(newName) {
     this.name = newName;
-    await WorkspaceStorage.storeWorkspaceState(this);
+    await this.storeState();
   }
 
   // Store hidden tabs in storage
-  async prepareToHide(windowId){
+  async prepareToHide(windowId) {
     const tabs = await browser.tabs.query({
       windowId: windowId,
       pinned: false
@@ -33,16 +40,16 @@ class Workspace {
   }
 
   // Then remove the tabs from the window
-  async hide(windowId){
+  async hide(windowId) {
     this.active = false;
-    await WorkspaceStorage.storeWorkspaceState(this);
+    await this.storeState();
 
     const tabIds = this.hiddenTabs.map(tab => tab.id);
     browser.tabs.remove(tabIds);
   }
 
-  async show(windowId){
-    const tabs = this.hiddenTabs.filter(tabObject => this.isPermissibleURL(tabObject.url));
+  async show(windowId) {
+    const tabs = this.hiddenTabs.filter(tabObject => Util.isPermissibleURL(tabObject.url));
 
     if (tabs.length == 0){
       tabs.push({
@@ -63,29 +70,52 @@ class Workspace {
 
     this.hiddenTabs = [];
     this.active = true;
-    await WorkspaceStorage.storeWorkspaceState(this);
+    await this.storeState();
   }
 
   // Then remove the tabs from the window
-  async delete(windowId){
+  async delete(windowId) {
     await WorkspaceStorage.deleteWorkspaceState(this.id);
     await WorkspaceStorage.unregisterWorkspaceToWindow(windowId, this.id);
   }
 
-  // Is the url compatible with the tabs.create API?
-  isPermissibleURL(url) {
-    const protocol = new URL(url).protocol;
-    if (protocol === "about:" || protocol === "chrome:" || protocol === "moz-extension:") {
-      return false;
-    }
+  async attachTab(tab) {
+    const tabObject = Object.assign({}, tab);
+    this.hiddenTabs.push(tabObject);
 
-    return true;
+    await this.storeState();
   }
 
-  static generateId() {
-    // UUIDv4 from https://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript
-    return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
-      (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
-    )
+  async detachTab(tab) {
+    // We need to refresh the state because if the active workspace was switched we might have an old reference
+    await this.refreshState();
+
+    if (this.active){
+      // If the workspace is currently active, simply remove the tab.
+      await browser.tabs.remove(tab.id);
+    } else {
+      // Otherwise, forget it from hiddenTabs
+      const index = this.hiddenTabs.findIndex(tabObject => tabObject.id == tab.id);
+      if (index > -1){
+        this.hiddenTabs.splice(index, 1);
+        await this.storeState();
+      }
+    }
+  }
+
+  async refreshState() {
+    const state = await WorkspaceStorage.fetchWorkspaceState(this.id);
+
+    this.name = state.name;
+    this.active = state.active;
+    this.hiddenTabs = state.hiddenTabs;
+  }
+
+  async storeState() {
+    await WorkspaceStorage.storeWorkspaceState(this.id, {
+      name: this.name,
+      active: this.active,
+      hiddenTabs: this.hiddenTabs
+    });
   }
 }

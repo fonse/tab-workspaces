@@ -1,5 +1,6 @@
 const WorkspaceStorage = {
 
+  // Deprecated
   async fetchWorkspace(workspaceId) {
     const key = `workspaces@${workspaceId}`;
     const results = await browser.storage.local.get(key);
@@ -12,20 +13,36 @@ const WorkspaceStorage = {
     }
   },
 
-  async storeWorkspaceState(workspace) {
-    const key = `workspaces@${workspace.id}`;
+  async fetchWorkspaceState(workspaceId) {
+    const key = `workspaces@${workspaceId}`;
+    const results = await browser.storage.local.get(key);
+
+    if (results[key]){
+      return results[key];
+    } else {
+      throw `Workspace ${workspaceId} has no state.`;
+    }
+  },
+
+  async storeWorkspaceState(workspaceId, state) {
+    const key = `workspaces@${workspaceId}`;
     await browser.storage.local.set({
-      [key]: {
-        name: workspace.name,
-        active: workspace.active,
-        hiddenTabs: workspace.hiddenTabs
-      }
+      [key]: state
     });
   },
 
   async deleteWorkspaceState(workspaceId) {
     const key = `workspaces@${workspaceId}`;
     await browser.storage.local.remove(key);
+  },
+
+  async fetchWorkspacesCountForWindow(windowId) {
+    const key = `windows@${windowId}`;
+    const results = await browser.storage.local.get(key);
+
+    const workspaceIds = results[key] || [];
+
+    return workspaceIds.length;
   },
 
   async fetchWorkspacesForWindow(windowId) {
