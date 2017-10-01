@@ -112,9 +112,11 @@ const BackgroundLogic = {
     });
   },
 
-  async updateContextMenu() {
-    await browser.menus.removeAll();
-    await BackgroundLogic.initializeContextMenu();
+  async updateContextMenu(windowId) {
+    if (windowId != browser.windows.WINDOW_ID_NONE){
+      await browser.menus.removeAll();
+      await BackgroundLogic.initializeContextMenu();
+    }
   },
 
   async handleContextMenuClick(menu, tab) {
