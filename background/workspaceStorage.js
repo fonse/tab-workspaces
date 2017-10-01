@@ -40,12 +40,12 @@ const WorkspaceStorage = {
     return await Promise.all(promises);
   },
 
-  async registerWorkspaceToWindow(windowId, workspace) {
+  async registerWorkspaceToWindow(windowId, workspaceId) {
     const key = `windows@${windowId}`;
     const results = await browser.storage.local.get(key);
     const workspacesForWindow = results[key] || [];
 
-    workspacesForWindow.push(workspace.id);
+    workspacesForWindow.push(workspaceId);
     await browser.storage.local.set({
       [key]: workspacesForWindow
     });

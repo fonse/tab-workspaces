@@ -9,7 +9,7 @@ class Workspace {
   static async create(windowId, name, active) {
     const workspace = new Workspace(Workspace.generateId(), name, active || false, []);
     await WorkspaceStorage.storeWorkspaceState(workspace);
-    await WorkspaceStorage.registerWorkspaceToWindow(windowId, workspace);
+    await WorkspaceStorage.registerWorkspaceToWindow(windowId, workspace.id);
 
     return workspace;
   }
