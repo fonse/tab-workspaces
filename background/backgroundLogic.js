@@ -1,5 +1,9 @@
 const BackgroundLogic = {
 
+  init(){
+    browser.windows.onRemoved.addListener(BackgroundLogic.tearDownWindow);
+  },
+
   async getWorkspacesForCurrentWindow(){
     return await BackgroundLogic.getWorkspacesForWindow(await BackgroundLogic.getCurrentWindowId());
   },
@@ -68,6 +72,13 @@ const BackgroundLogic = {
     await workspaceToDelete.delete(windowId);
   },
 
+  tearDownWindow(windowId) {
+    // Don't tear down if the user is closing the browser
+    setTimeout(() => {
+      WorkspaceStorage.tearDownWindow(windowId);
+    }, 5000);
+  },
+
   async getCurrentWindowId() {
     const currentWindow = await browser.windows.getCurrent();
 
@@ -75,3 +86,5 @@ const BackgroundLogic = {
   }
 
 };
+
+BackgroundLogic.init();

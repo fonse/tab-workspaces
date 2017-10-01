@@ -77,6 +77,21 @@ const WorkspaceStorage = {
 
     const nextIndex = index < workspaceIds.length -1 ? index + 1 : index - 1;
     return workspaceIds[nextIndex];
+  },
+
+  async tearDownWindow(windowId){
+    // Fetch workspaces in closed window
+    const key = `windows@${windowId}`;
+    const results = await browser.storage.local.get(key);
+    const workspaceIds = results[key] || [];
+
+    // Remove entry in windows list
+    await browser.storage.local.remove(key);
+
+    // Then remove the state of all the workspaces in the window
+    const promises = workspaceIds.map(WorkspaceStorage.deleteWorkspaceState);
+
+    await Promise.all(promises);
   }
 
 }
