@@ -61,8 +61,8 @@ const BackgroundLogic = {
     const workspaceToDelete = await WorkspaceStorage.fetchWorkspace(workspaceId);
 
     if (currentWorkspace.id == workspaceId){
-      console.log("Deleting current workspace is not implemented yet.");
-      return;
+      const nextWorkspaceId = await WorkspaceStorage.fetchNextWorkspaceId(windowId, workspaceId);
+      await BackgroundLogic.switchToWorkspace(nextWorkspaceId);
     }
 
     await workspaceToDelete.delete(windowId);

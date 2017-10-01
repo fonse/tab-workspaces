@@ -62,6 +62,21 @@ const WorkspaceStorage = {
     await browser.storage.local.set({
       [key]: workspacesForWindow
     });
+  },
+
+  async fetchNextWorkspaceId(windowId, referenceWorkspaceId) {
+    const key = `windows@${windowId}`;
+    const results = await browser.storage.local.get(key);
+
+    const workspaceIds = results[key] || [];
+    const index = workspaceIds.findIndex(aWorkspaceId => aWorkspaceId == referenceWorkspaceId);
+
+    if (index == -1 || workspaceIds.length == 1){
+      throw "There is no other workspace";
+    }
+
+    const nextIndex = index < workspaceIds.length -1 ? index + 1 : index - 1;
+    return workspaceIds[nextIndex];
   }
 
 }

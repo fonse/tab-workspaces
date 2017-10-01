@@ -140,6 +140,10 @@ li.workspace-edit-entry a.edit-button-delete {
   background: url("../img/delete.svg");
 }
 
+li:only-child.workspace-edit-entry a.edit-button-delete {
+  opacity: 0.5;
+}
+
 .footer {
   display: inline-block;
   vertical-align: top;

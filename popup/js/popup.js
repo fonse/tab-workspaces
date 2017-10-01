@@ -42,6 +42,11 @@ const Logic = {
       } else if (e.target.classList.contains("js-delete-workspace")) {
         // Delete element
         const li = e.target.parentNode;
+        if (li.parentNode.childNodes.length == 1){
+          // Can't delete the last workspace
+          return;
+        }
+
         const workspaceId = li.dataset.workspaceId;
         li.parentNode.removeChild(li);
 
