@@ -8,15 +8,22 @@ class Workspace {
 
   static async create(windowId, name, active) {
     const workspace = new Workspace(Util.generateUUID(), name, active || false, []);
-    await WorkspaceStorage.storeWorkspaceState(workspace);
+    await workspace.storeState();
     await WorkspaceStorage.registerWorkspaceToWindow(windowId, workspace.id);
+
+    return workspace;
+  }
+
+  static async find(workspaceId) {
+    const workspace = new Workspace(workspaceId);
+    await workspace.refreshState();
 
     return workspace;
   }
 
   async rename(newName) {
     this.name = newName;
-    await WorkspaceStorage.storeWorkspaceState(this);
+    await this.storeState();
   }
 
   // Store hidden tabs in storage
@@ -35,7 +42,7 @@ class Workspace {
   // Then remove the tabs from the window
   async hide(windowId) {
     this.active = false;
-    await WorkspaceStorage.storeWorkspaceState(this);
+    await this.storeState();
 
     const tabIds = this.hiddenTabs.map(tab => tab.id);
     browser.tabs.remove(tabIds);
@@ -63,7 +70,7 @@ class Workspace {
 
     this.hiddenTabs = [];
     this.active = true;
-    await WorkspaceStorage.storeWorkspaceState(this);
+    await this.storeState();
   }
 
   // Then remove the tabs from the window
@@ -76,7 +83,7 @@ class Workspace {
     const tabObject = Object.assign({}, tab);
     this.hiddenTabs.push(tabObject);
 
-    await WorkspaceStorage.storeWorkspaceState(this);
+    await this.storeState();
   }
 
   async detachTab(tab) {
@@ -91,7 +98,7 @@ class Workspace {
       const index = this.hiddenTabs.findIndex(tabObject => tabObject.id == tab.id);
       if (index > -1){
         this.hiddenTabs.splice(index, 1);
-        await WorkspaceStorage.storeWorkspaceState(this);
+        await this.storeState();
       }
     }
   }
@@ -102,5 +109,13 @@ class Workspace {
     this.name = state.name;
     this.active = state.active;
     this.hiddenTabs = state.hiddenTabs;
+  }
+
+  async storeState() {
+    await WorkspaceStorage.storeWorkspaceState(this.id, {
+      name: this.name,
+      active: this.active,
+      hiddenTabs: this.hiddenTabs
+    });
   }
 }

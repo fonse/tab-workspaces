@@ -24,14 +24,10 @@ const WorkspaceStorage = {
     }
   },
 
-  async storeWorkspaceState(workspace) {
-    const key = `workspaces@${workspace.id}`;
+  async storeWorkspaceState(workspaceId, state) {
+    const key = `workspaces@${workspaceId}`;
     await browser.storage.local.set({
-      [key]: {
-        name: workspace.name,
-        active: workspace.active,
-        hiddenTabs: workspace.hiddenTabs
-      }
+      [key]: state
     });
   },
 

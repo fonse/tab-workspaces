@@ -58,7 +58,7 @@ const BackgroundLogic = {
     const windowId = await BackgroundLogic.getCurrentWindowId();
 
     const oldWorkspace = await BackgroundLogic.getCurrentWorkspaceForWindow(windowId);
-    const newWorkspace = await WorkspaceStorage.fetchWorkspace(workspaceId);
+    const newWorkspace = await Workspace.find(workspaceId);
 
     if (oldWorkspace.id == newWorkspace.id){
       // Nothing to do here
@@ -73,7 +73,7 @@ const BackgroundLogic = {
   },
 
   async renameWorkspace(workspaceId, workspaceName) {
-    const workspace = await WorkspaceStorage.fetchWorkspace(workspaceId);
+    const workspace = await Workspace.find(workspaceId);
 
     await workspace.rename(workspaceName);
 
@@ -84,7 +84,7 @@ const BackgroundLogic = {
   async deleteWorkspace(workspaceId) {
     const windowId = await BackgroundLogic.getCurrentWindowId();
     const currentWorkspace = await BackgroundLogic.getCurrentWorkspaceForWindow(windowId);
-    const workspaceToDelete = await WorkspaceStorage.fetchWorkspace(workspaceId);
+    const workspaceToDelete = await Workspace.find(workspaceId);
 
     if (currentWorkspace.id == workspaceId){
       const nextWorkspaceId = await WorkspaceStorage.fetchNextWorkspaceId(windowId, workspaceId);
@@ -151,7 +151,7 @@ const BackgroundLogic = {
     if (menu.menuItemId.substring(0,3) == "new"){
       destinationWorkspace = await BackgroundLogic.createNewWorkspace(false);
     } else {
-      destinationWorkspace = await WorkspaceStorage.fetchWorkspace(menu.menuItemId);
+      destinationWorkspace = await Workspace.find(menu.menuItemId);
     }
 
     // Attach tab to destination workspace
