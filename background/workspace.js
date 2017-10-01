@@ -66,6 +66,12 @@ class Workspace {
     await WorkspaceStorage.storeWorkspaceState(this);
   }
 
+  // Then remove the tabs from the window
+  async delete(windowId){
+    await WorkspaceStorage.deleteWorkspaceState(this.id);
+    await WorkspaceStorage.unregisterWorkspaceToWindow(windowId, this.id);
+  }
+
   // Is the url compatible with the tabs.create API?
   isPermissibleURL(url) {
     const protocol = new URL(url).protocol;

@@ -12,7 +12,7 @@ const Logic = {
   },
 
   registerEventListeners() {
-    document.addEventListener("click", e => {
+    document.addEventListener("click", async e => {
       if (e.target.classList.contains("js-switch-workspace")) {
         var workspaceId = e.target.dataset.workspaceId;
         Logic.callBackground("switchToWorkspace", {
@@ -40,10 +40,19 @@ const Logic = {
         input.focus();
 
       } else if (e.target.classList.contains("js-delete-workspace")) {
-        const workspaceId = e.target.parentNode.dataset.workspaceId;
-        Logic.callBackground("deleteWorkspace", {
+        // Delete element
+        const li = e.target.parentNode;
+        const workspaceId = li.dataset.workspaceId;
+        li.parentNode.removeChild(li);
+
+        // Delete the workspace
+        await Logic.callBackground("deleteWorkspace", {
           workspaceId: workspaceId
         });
+
+        // And re-render the list panel
+        await Logic.fetchWorkspaces();
+        Logic.renderWorkspacesList();
       }
     });
 

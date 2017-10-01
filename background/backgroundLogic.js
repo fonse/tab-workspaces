@@ -19,7 +19,7 @@ const BackgroundLogic = {
   async getCurrentWorkspaceForWindow(windowId) {
     const workspaces = await BackgroundLogic.getWorkspacesForWindow(windowId);
 
-    return workspaces.filter(workspace => workspace.active)[0];
+    return workspaces.find(workspace => workspace.active);
   },
 
   async createNewWorkspace(workspaceName, active){
@@ -56,7 +56,16 @@ const BackgroundLogic = {
   },
 
   async deleteWorkspace(workspaceId) {
-    console.log("About to delete",workspaceId);
+    const windowId = await BackgroundLogic.getCurrentWindowId();
+    const currentWorkspace = await BackgroundLogic.getCurrentWorkspaceForWindow(windowId);
+    const workspaceToDelete = await WorkspaceStorage.fetchWorkspace(workspaceId);
+
+    if (currentWorkspace.id == workspaceId){
+      console.log("Deleting current workspace is not implemented yet.");
+      return;
+    }
+
+    await workspaceToDelete.delete(windowId);
   },
 
   async getCurrentWindowId() {

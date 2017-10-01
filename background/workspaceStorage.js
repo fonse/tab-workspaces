@@ -23,6 +23,11 @@ const WorkspaceStorage = {
     });
   },
 
+  async deleteWorkspaceState(workspaceId) {
+    const key = `workspaces@${workspaceId}`;
+    await browser.storage.local.remove(key);
+  },
+
   async fetchWorkspacesForWindow(windowId) {
     const key = `windows@${windowId}`;
     const results = await browser.storage.local.get(key);
@@ -41,6 +46,19 @@ const WorkspaceStorage = {
     const workspacesForWindow = results[key] || [];
 
     workspacesForWindow.push(workspace.id);
+    await browser.storage.local.set({
+      [key]: workspacesForWindow
+    });
+  },
+
+  async unregisterWorkspaceToWindow(windowId, workspaceId) {
+    const key = `windows@${windowId}`;
+    const results = await browser.storage.local.get(key);
+    const workspacesForWindow = results[key] || [];
+
+    const index = workspacesForWindow.findIndex(aWorkspaceId => aWorkspaceId == workspaceId);
+    workspacesForWindow.splice(index, 1);
+
     await browser.storage.local.set({
       [key]: workspacesForWindow
     });
