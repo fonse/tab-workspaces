@@ -20,3 +20,5 @@ If you know any better way to hide the tabs, please let me know.
 
 ## Acknowledgements
 This extension was inspired by [Multi-Account Containers](https://addons.mozilla.org/en-US/firefox/addon/multi-account-containers/), which also served as a reference for some of the functionality.
+
+Special thanks to [@NicolasJEngler](http://nicolasjengler.com.ar/) for designing a beautiful UI for this extension!
