@@ -12,6 +12,7 @@
   "homepage_url": "https://www.github.com/fonse/tab-workspaces",
 
   "permissions": [
+    "menus",
     "storage",
     "tabs"
   ],
@@ -25,6 +26,7 @@
 
   "background": {
     "scripts": [
+      "background/util.js",
       "background/backgroundLogic.js",
       "background/workspace.js",
       "background/workspaceStorage.js",

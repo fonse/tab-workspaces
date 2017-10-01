@@ -7,7 +7,7 @@ class Workspace {
   }
 
   static async create(windowId, name, active) {
-    const workspace = new Workspace(Workspace.generateId(), name, active || false, []);
+    const workspace = new Workspace(Util.generateUUID(), name, active || false, []);
     await WorkspaceStorage.storeWorkspaceState(workspace);
     await WorkspaceStorage.registerWorkspaceToWindow(windowId, workspace.id);
 
@@ -42,7 +42,7 @@ class Workspace {
   }
 
   async show(windowId){
-    const tabs = this.hiddenTabs.filter(tabObject => this.isPermissibleURL(tabObject.url));
+    const tabs = this.hiddenTabs.filter(tabObject => Util.isPermissibleURL(tabObject.url));
 
     if (tabs.length == 0){
       tabs.push({
@@ -70,16 +70,6 @@ class Workspace {
   async delete(windowId){
     await WorkspaceStorage.deleteWorkspaceState(this.id);
     await WorkspaceStorage.unregisterWorkspaceToWindow(windowId, this.id);
-  }
-
-  // Is the url compatible with the tabs.create API?
-  isPermissibleURL(url) {
-    const protocol = new URL(url).protocol;
-    if (protocol === "about:" || protocol === "chrome:" || protocol === "moz-extension:") {
-      return false;
-    }
-
-    return true;
   }
 
   static generateId() {

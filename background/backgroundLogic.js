@@ -1,7 +1,13 @@
 const BackgroundLogic = {
 
   init(){
+    BackgroundLogic.initializeListeners();
+    BackgroundLogic.initializeContextMenu();
+  },
+
+  initializeListeners(){
     browser.windows.onRemoved.addListener(BackgroundLogic.tearDownWindow);
+    browser.windows.onFocusChanged.addListener(BackgroundLogic.updateContextMenu);
   },
 
   async getWorkspacesForCurrentWindow(){
@@ -83,6 +89,30 @@ const BackgroundLogic = {
     const currentWindow = await browser.windows.getCurrent();
 
     return currentWindow.id;
+  },
+
+  async initializeContextMenu() {
+    const id = Util.generateUUID();
+
+    browser.menus.create({
+      id: id,
+      title: "Send Tab to Workspace",
+      contexts: ["tab"]
+    });
+
+    const workspaces = await BackgroundLogic.getWorkspacesForCurrentWindow();
+    workspaces.forEach(workspace => {
+      browser.menus.create({
+        title: workspace.name,
+        parentId: id,
+        enabled: !workspace.active
+      });
+    });
+  },
+
+  async updateContextMenu() {
+    await browser.menus.removeAll();
+    await BackgroundLogic.initializeContextMenu();
   }
 
 };
