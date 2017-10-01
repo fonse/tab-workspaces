@@ -9,9 +9,14 @@ class Workspace {
   static async create(windowId, name, active) {
     const workspace = new Workspace(Workspace.generateId(), name, active || false, []);
     await WorkspaceStorage.storeWorkspaceState(workspace);
-    await WorkspaceStorage.registerWorkspaceToWindow(windowId, workspace);
+    await WorkspaceStorage.registerWorkspaceToWindow(windowId, workspace.id);
 
     return workspace;
+  }
+
+  async rename(newName){
+    this.name = newName;
+    await WorkspaceStorage.storeWorkspaceState(this);
   }
 
   // Store hidden tabs in storage
@@ -59,6 +64,12 @@ class Workspace {
     this.hiddenTabs = [];
     this.active = true;
     await WorkspaceStorage.storeWorkspaceState(this);
+  }
+
+  // Then remove the tabs from the window
+  async delete(windowId){
+    await WorkspaceStorage.deleteWorkspaceState(this.id);
+    await WorkspaceStorage.unregisterWorkspaceToWindow(windowId, this.id);
   }
 
   // Is the url compatible with the tabs.create API?

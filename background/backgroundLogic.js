@@ -1,5 +1,9 @@
 const BackgroundLogic = {
 
+  init(){
+    browser.windows.onRemoved.addListener(BackgroundLogic.tearDownWindow);
+  },
+
   async getWorkspacesForCurrentWindow(){
     return await BackgroundLogic.getWorkspacesForWindow(await BackgroundLogic.getCurrentWindowId());
   },
@@ -19,7 +23,7 @@ const BackgroundLogic = {
   async getCurrentWorkspaceForWindow(windowId) {
     const workspaces = await BackgroundLogic.getWorkspacesForWindow(windowId);
 
-    return workspaces.filter(workspace => workspace.active)[0];
+    return workspaces.find(workspace => workspace.active);
   },
 
   async createNewWorkspace(workspaceName, active){
@@ -49,6 +53,32 @@ const BackgroundLogic = {
     await oldWorkspace.hide(windowId);
   },
 
+  async renameWorkspace(workspaceId, workspaceName) {
+    const workspace = await WorkspaceStorage.fetchWorkspace(workspaceId);
+
+    await workspace.rename(workspaceName);
+  },
+
+  async deleteWorkspace(workspaceId) {
+    const windowId = await BackgroundLogic.getCurrentWindowId();
+    const currentWorkspace = await BackgroundLogic.getCurrentWorkspaceForWindow(windowId);
+    const workspaceToDelete = await WorkspaceStorage.fetchWorkspace(workspaceId);
+
+    if (currentWorkspace.id == workspaceId){
+      const nextWorkspaceId = await WorkspaceStorage.fetchNextWorkspaceId(windowId, workspaceId);
+      await BackgroundLogic.switchToWorkspace(nextWorkspaceId);
+    }
+
+    await workspaceToDelete.delete(windowId);
+  },
+
+  tearDownWindow(windowId) {
+    // Don't tear down if the user is closing the browser
+    setTimeout(() => {
+      WorkspaceStorage.tearDownWindow(windowId);
+    }, 5000);
+  },
+
   async getCurrentWindowId() {
     const currentWindow = await browser.windows.getCurrent();
 
@@ -56,3 +86,5 @@ const BackgroundLogic = {
   }
 
 };
+
+BackgroundLogic.init();

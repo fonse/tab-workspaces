@@ -1,4 +1,4 @@
-browser.runtime.onMessage.addListener((m) => {
+browser.runtime.onMessage.addListener(async m => {
   let response;
 
   switch (m.method) {
@@ -6,10 +6,16 @@ browser.runtime.onMessage.addListener((m) => {
       response = BackgroundLogic.getWorkspacesForCurrentWindow();
       break;
     case "switchToWorkspace":
-      BackgroundLogic.switchToWorkspace(m.workspaceId);
+      await BackgroundLogic.switchToWorkspace(m.workspaceId);
       break;
     case "createNewWorkspace":
-      BackgroundLogic.createNewWorkspace(m.workspaceName);
+      await BackgroundLogic.createNewWorkspace(m.workspaceName);
+      break;
+    case "renameWorkspace":
+      await BackgroundLogic.renameWorkspace(m.workspaceId, m.workspaceName);
+      break;
+    case "deleteWorkspace":
+      await BackgroundLogic.deleteWorkspace(m.workspaceId);
       break;
   }
 

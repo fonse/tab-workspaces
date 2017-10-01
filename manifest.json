@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Tab Workspaces",
-  "version": "0.1.0",
+  "version": "0.2.0",
 
   "description": "Organize your tabs into workspaces. Switch between workspaces to change which tabs are displayed at the moment.",
   "icons": {
@@ -9,7 +9,7 @@
     "96": "icons/container-site-d-96.png"
   },
 
-  "homepage_url": "https://fonse.github.com/tab-workspaces",
+  "homepage_url": "https://www.github.com/fonse/tab-workspaces",
 
   "permissions": [
     "storage",
