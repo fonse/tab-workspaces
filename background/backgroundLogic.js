@@ -105,7 +105,9 @@ const BackgroundLogic = {
       browser.menus.create({
         title: workspace.name,
         parentId: id,
-        enabled: !workspace.active
+        id: workspace.id,
+        enabled: !workspace.active,
+        onclick: BackgroundLogic.handleContextMenuClick
       });
     });
   },
@@ -113,6 +115,17 @@ const BackgroundLogic = {
   async updateContextMenu() {
     await browser.menus.removeAll();
     await BackgroundLogic.initializeContextMenu();
+  },
+
+  async handleContextMenuClick(menu, tab) {
+    const windowId = await BackgroundLogic.getCurrentWindowId();
+
+    const destinationWorkspace = await WorkspaceStorage.fetchWorkspace(menu.menuItemId);
+    const currentWorkspace = await BackgroundLogic.getCurrentWorkspaceForWindow(windowId);
+
+    // TODO What if it's the last tab left?
+    destinationWorkspace.attachTab(tab);
+    currentWorkspace.detachTab(tab);
   }
 
 };
