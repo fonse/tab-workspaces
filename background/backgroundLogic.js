@@ -106,10 +106,10 @@ const BackgroundLogic = {
   },
 
   async initializeContextMenu() {
-    const id = Util.generateUUID();
+    const menuId = Util.generateUUID();
 
     browser.menus.create({
-      id: id,
+      id: menuId,
       title: "Send Tab to Workspace",
       contexts: ["tab"]
     });
@@ -118,11 +118,18 @@ const BackgroundLogic = {
     workspaces.forEach(workspace => {
       browser.menus.create({
         title: workspace.name,
-        parentId: id,
+        parentId: menuId,
         id: workspace.id,
         enabled: !workspace.active,
         onclick: BackgroundLogic.handleContextMenuClick
       });
+    });
+
+    browser.menus.create({
+      title: "Create new workspace",
+      parentId: menuId,
+      id: "new-" + menuId,
+      onclick: BackgroundLogic.handleContextMenuClick
     });
   },
 
@@ -135,9 +142,14 @@ const BackgroundLogic = {
 
   async handleContextMenuClick(menu, tab) {
     const windowId = await BackgroundLogic.getCurrentWindowId();
-
-    const destinationWorkspace = await WorkspaceStorage.fetchWorkspace(menu.menuItemId);
     const currentWorkspace = await BackgroundLogic.getCurrentWorkspaceForWindow(windowId);
+    var destinationWorkspace;
+
+    if (menu.menuItemId.substring(0,3) == "new"){
+      destinationWorkspace = await Workspace.create(windowId, "New Workspace", false);
+    } else {
+      destinationWorkspace = await WorkspaceStorage.fetchWorkspace(menu.menuItemId);
+    }
 
     // Attach tab to destination workspace
     await destinationWorkspace.attachTab(tab);
