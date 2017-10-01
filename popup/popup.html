@@ -3,6 +3,7 @@
     <meta http-equiv="content-type" content="text/html; charset=utf-8">
     <title></title>
     <link rel="stylesheet" href="css/popup.css">
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,500,700" rel="stylesheet">
   </head>
   <body>
     <div class="container" id="workspace-list-container">
@@ -11,8 +12,10 @@
         <!-- Populated with js -->
       </ul>
 
-      <a href="#" class="footer split-large js-switch-panel">Edit workspaces</a><!--
-      --><a href="#" class="footer split-small js-new-workspace"></a>
+      <div class="footer-container">
+        <a href="#" class="footer split-large js-switch-panel">Edit workspaces</a><!--
+        --><a href="#" class="footer split-small js-new-workspace"></a>
+      </div>
     </div>
 
     <div class="container hide" id="workspace-edit-container">
@@ -21,7 +24,9 @@
         <!-- Populated with js -->
       </ul>
 
-      <a href="#" class="footer full-width js-switch-panel">Stop editing</a>
+      <div class="footer-container">
+        <a href="#" class="footer full-width js-switch-panel">Stop editing</a>
+      </div>
     </div>
 
     <script src="js/backgroundMock.js"></script>
