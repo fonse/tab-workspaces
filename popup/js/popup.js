@@ -140,7 +140,11 @@ const Logic = {
   async callBackground(method, args) {
     const message = Object.assign({}, {method}, args);
 
-    return await browser.runtime.sendMessage(message);
+    if (typeof browser != "undefined"){
+      return await browser.runtime.sendMessage(message);
+    } else {
+      return BackgroundMock.sendMessage(message);
+    }
   }
 
 }
