@@ -97,6 +97,27 @@ const BackgroundLogic = {
     BackgroundLogic.updateContextMenu();
   },
 
+  async moveTabToWorkspace(tab, destinationWorkspace) {
+    const windowId = await BackgroundLogic.getCurrentWindowId();
+    const currentWorkspace = await BackgroundLogic.getCurrentWorkspaceForWindow(windowId);
+
+    // Attach tab to destination workspace
+    await destinationWorkspace.attachTab(tab);
+
+    // If this is the last tab of the window, we need to switch workspaces
+    const tabsInCurrentWindow = await browser.tabs.query({
+      windowId: windowId,
+      pinned: false
+    });
+
+    if (tabsInCurrentWindow.length == 1){
+      await BackgroundLogic.switchToWorkspace(destinationWorkspace.id);
+    }
+
+    // Finally, detach tab from source workspace
+    await currentWorkspace.detachTab(tab);
+  },
+
   tearDownWindow(windowId) {
     // Don't tear down if the user is closing the browser
     setTimeout(() => {
@@ -144,8 +165,6 @@ const BackgroundLogic = {
   }, 250),
 
   async handleContextMenuClick(menu, tab) {
-    const windowId = await BackgroundLogic.getCurrentWindowId();
-    const currentWorkspace = await BackgroundLogic.getCurrentWorkspaceForWindow(windowId);
     var destinationWorkspace;
 
     if (menu.menuItemId.substring(0,3) == "new"){
@@ -154,21 +173,7 @@ const BackgroundLogic = {
       destinationWorkspace = await Workspace.find(menu.menuItemId);
     }
 
-    // Attach tab to destination workspace
-    await destinationWorkspace.attachTab(tab);
-
-    // If this is the last tab of the window, we need to switch workspaces
-    const tabsInCurrentWindow = await browser.tabs.query({
-      windowId: windowId,
-      pinned: false
-    });
-
-    if (tabsInCurrentWindow.length == 1){
-      await BackgroundLogic.switchToWorkspace(destinationWorkspace.id);
-    }
-
-    // Finally, detach tab from source workspace
-    await currentWorkspace.detachTab(tab);
+    await BackgroundLogic.moveTabToWorkspace(tab, destinationWorkspace);
   }
 
 };
