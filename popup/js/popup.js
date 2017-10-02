@@ -14,7 +14,7 @@ const Logic = {
   registerEventListeners() {
     document.addEventListener("click", async e => {
       if (e.target.classList.contains("js-switch-workspace")) {
-        var workspaceId = e.target.dataset.workspaceId;
+        const workspaceId = e.target.dataset.workspaceId;
         Logic.callBackground("switchToWorkspace", {
           workspaceId: workspaceId
         });
@@ -73,6 +73,29 @@ const Logic = {
         await Logic.fetchWorkspaces();
         Logic.renderWorkspacesList();
       }
+    });
+
+    // This focus is needed to capture key presses without user interaction
+    document.querySelector("#keyupTrap").focus();
+    document.addEventListener("keyup", async e => {
+      const key = e.key;
+      var index = parseInt(key);
+
+      if (key.length == 1 && !isNaN(index)){
+        if (index == 0){
+          index = 10;
+        }
+
+        const el = document.querySelector(`#workspace-list li:nth-child(${index})`);
+        if (el){
+          Logic.callBackground("switchToWorkspace", {
+            workspaceId: el.dataset.workspaceId
+          });
+
+          window.close();
+        }
+      }
+
     });
   },
 

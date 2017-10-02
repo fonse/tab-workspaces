@@ -11,6 +11,7 @@ This extension aims to be an alternative to [Tab Groups](https://addons.mozilla.
  - Pinned tabs are visible from all workspaces.
  - If you have multiple windows open, each one has its own set of workspaces.
  - Option to send a specific tab to another workspace from the right-click menu.
+ - Press Ctrl+E to open the list of workspaces, then press 1-9 to switch between using keyboard shortcuts.
 
 ## Notice
 There is no way to "hide" a tab with the WebExtensions API, so when switching between workspaces the tabs are actually closed and reopened.

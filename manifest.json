@@ -24,6 +24,15 @@
     "default_popup": "popup/popup.html"
   },
 
+  "commands": {
+    "_execute_browser_action": {
+      "suggested_key": {
+        "default": "Ctrl+E"
+      },
+      "description": "Open workspace list"
+    }
+  },
+
   "background": {
     "scripts": [
       "background/util.js",

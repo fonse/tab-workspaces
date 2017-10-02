@@ -152,7 +152,7 @@ li:only-child.workspace-edit-entry a.edit-button-delete {
 
 .footer-container {
   background-color: #0093E9;
-  background-image: linear-gradient(160deg, #0093E9 0%, #80D0C7 100%);  
+  background-image: linear-gradient(160deg, #0093E9 0%, #80D0C7 100%);
 }
 
 .footer {
@@ -190,4 +190,14 @@ li:only-child.workspace-edit-entry a.edit-button-delete {
   background-size: 16px;
   background-repeat: no-repeat;
   background-position: center;
+}
+
+.almost-hide {
+  font-size:0;
+  line-height: 0;
+  height:0;
+  width:0;
+  padding:0;
+  margin:0;
+  border:0;
 }

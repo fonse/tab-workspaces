@@ -29,6 +29,9 @@
       </div>
     </div>
 
+    <!-- Browser actions don't receive focus by default, so set focus to this hidden element to be able to capture keyup events -->
+    <input type="text" id="keyupTrap" class="almost-hide">
+
     <script src="js/backgroundMock.js"></script>
     <script src="js/popup.js"></script>
   </body>
