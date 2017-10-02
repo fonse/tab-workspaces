@@ -78,6 +78,7 @@ ul{
   min-height: 250px;
   background: #eaecf5;
   overflow: hidden;
+  padding: 0 0 15px;
 }
 
 li.workspace-list-entry {
