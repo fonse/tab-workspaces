@@ -106,24 +106,13 @@ const Logic = {
   async renderWorkspacesList() {
     const fragment = document.createDocumentFragment();
 
-    // We don't want the forEach below to be async, so do everything async here
-    // For this reason, we cannot externalize this to a `getTabsCount` function.
-    // Also, we're not counting pinned tabs for any workspace. Should we?
-    const currentWindow = await browser.windows.getCurrent();
-    const tabs = await browser.tabs.query({
-      pinned: false,
-      windowId: currentWindow.id
-    })
-
     this.workspaces.forEach(workspace => {
-      const tabsCount = workspace.active ? tabs.length : workspace.hiddenTabs.length;
-
       const li = document.createElement("li");
       li.classList.add("workspace-list-entry", "js-switch-workspace");
       if (workspace.active){
         li.classList.add("active");
       }
-      li.innerHTML = workspace.name + ` <span class="tabs-qty">(${tabsCount})</span>`;
+      li.innerHTML = workspace.name + ` <span class="tabs-qty">(${workspace.tabCount})</span>`;
       li.dataset.workspaceId = workspace.id;
       fragment.appendChild(li);
     });
