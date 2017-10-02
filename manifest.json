@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Tab Workspaces",
-  "version": "1.0.0",
+  "version": "1.0.1",
 
   "description": "Organize your tabs into workspaces. Switch between workspaces to change which tabs are displayed at the moment.",
   "icons": {
