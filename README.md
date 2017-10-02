@@ -8,6 +8,7 @@ This extension aims to be an alternative to [Tab Groups](https://addons.mozilla.
  - Each tab belongs to a workspace. New tabs are automatically added to the current workspace.
  - Switch between workspaces from the toolbar icon to keep your tabs organized.
  - Tabs in other workspaces are safely hidden away.
+ - Pinned tabs are visible from all workspaces.
  - If you have multiple windows open, each one has its own set of workspaces.
  - Option to send a specific tab to another workspace from the right-click menu.
 
@@ -17,6 +18,13 @@ There is no way to "hide" a tab with the WebExtensions API, so when switching be
 This has the side effect of not maintaining the tabs' history, as well as stopping whatever process is going on when the tab is closed.
 
 If you know any better way to hide the tabs, please let me know.
+
+# Future Improvements
+I'm planning to add the following features in the near future:
+
+- UI improvements
+- Keyboard shortcuts
+- Suggest tabs from other workspaces in the awesomebar
 
 ## Acknowledgements
 This extension was inspired by [Multi-Account Containers](https://addons.mozilla.org/en-US/firefox/addon/multi-account-containers/), which also served as a reference for some of the functionality.
