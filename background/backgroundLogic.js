@@ -147,7 +147,7 @@ const BackgroundLogic = {
     const workspaceObjects = await Promise.all(workspaces.map(workspace => workspace.toObject()));
     workspaceObjects.forEach(workspace => {
       browser.menus.create({
-        title: workspace.name + ` (${workspace.tabCount} tabs)`,
+        title: `$(workspace.name} (${workspace.tabCount} tabs)`,
         parentId: menuId,
         id: workspace.id,
         enabled: !workspace.active,
