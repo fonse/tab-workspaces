@@ -62,6 +62,7 @@ class Workspace {
       return browser.tabs.create({
         url: tabObject.url,
         active: tabObject.active,
+        cookieStoreId: tabObject.cookieStoreId,
         windowId: windowId
       });
     });
