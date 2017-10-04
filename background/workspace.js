@@ -67,7 +67,7 @@ class Workspace {
     await this.storeState();
 
     const tabIds = this.hiddenTabs.map(tab => tab.id);
-    browser.tabs.remove(tabIds);
+    await browser.tabs.remove(tabIds);
   }
 
   async show(windowId) {
