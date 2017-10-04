@@ -188,14 +188,16 @@ const BackgroundLogic = {
   },
 
   async handleAwesomebarSelection(content, disposition){
-    let workspaceId, tabIndex;
-    [workspaceId, tabIndex] = content.split(':');
+    let windowId, workspaceId, tabIndex;
+    [windowId, workspaceId, tabIndex] = content.split(':');
+
+    await browser.windows.update(parseInt(windowId), {focused: true});
 
     const workspace = await Workspace.find(workspaceId);
     await BackgroundLogic.switchToWorkspace(workspace.id);
 
     const matchedTabs = await browser.tabs.query({
-      windowId: await BackgroundLogic.getCurrentWindowId(),
+      windowId: parseInt(windowId),
       index: parseInt(tabIndex)
     });
 
@@ -209,17 +211,22 @@ const BackgroundLogic = {
       return [];
     }
 
-    text = text.toLowerCase();
+    const windows = await browser.windows.getAll({windowTypes: ['normal']})
+    const promises = windows.map(windowInfo => BackgroundLogic.searchTabsInWindow(text, windowInfo.id));
+
+    return Util.flattenArray(await Promise.all(promises));
+  },
+
+  async searchTabsInWindow(text, windowId){
     const suggestions = [];
 
-    // TODO Do this for other windows?
-    const workspaces = await BackgroundLogic.getWorkspacesForCurrentWindow();
+    const workspaces = await BackgroundLogic.getWorkspacesForWindow(windowId);
     const promises = workspaces.map(async workspace => {
-      const tabs = await workspace.getTabs();
+      const tabs = await workspace.getTabs(windowId);
       tabs.forEach(tabObject => {
         if (tabObject.title.toLowerCase().indexOf(text) != -1) {
           suggestions.push({
-            content: `${workspace.id}:${tabObject.index}`,
+            content: `${windowId}:${workspace.id}:${tabObject.index}`,
             description: tabObject.title
           });
         }

@@ -17,6 +17,13 @@ const Util = {
     )
   },
 
+  flattenArray(arr) {
+    return arr.reduce(
+      (acc, cur) => acc.concat(cur),
+      []
+    );
+  },
+
   // From https://gist.github.com/nmsdvid/8807205
   debounce(func, wait, immediate) {
   	var timeout;
