@@ -26,13 +26,13 @@ class Workspace {
     await this.storeState();
   }
 
-  async getTabs() {
+  async getTabs(suggestedWindowId) {
     if (this.active){
       // Not counting pinned tabs. Should we?
       const currentWindow = await browser.windows.getCurrent();
       const tabs = await browser.tabs.query({
         pinned: false,
-        windowId: currentWindow.id
+        windowId: suggestedWindowId || currentWindow.id
       });
 
       return tabs;
