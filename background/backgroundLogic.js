@@ -18,6 +18,7 @@ const BackgroundLogic = {
     browser.tabs.onRemoved.addListener(BackgroundLogic.updateContextMenu);
 
     browser.omnibox.onInputChanged.addListener(BackgroundLogic.handleAwesomebarSearch);
+    browser.omnibox.onInputEntered.addListener(BackgroundLogic.handleAwesomebarSelection);
   },
 
   async getWorkspacesForCurrentWindow(){
@@ -186,6 +187,23 @@ const BackgroundLogic = {
     suggest(await BackgroundLogic.searchTabs(text));
   },
 
+  async handleAwesomebarSelection(content, disposition){
+    let workspaceId, tabIndex;
+    [workspaceId, tabIndex] = content.split(':');
+
+    const workspace = await Workspace.find(workspaceId);
+    await BackgroundLogic.switchToWorkspace(workspace.id);
+
+    const matchedTabs = await browser.tabs.query({
+      windowId: await BackgroundLogic.getCurrentWindowId(),
+      index: parseInt(tabIndex)
+    });
+
+    if (matchedTabs.length > 0){
+      await browser.tabs.update(matchedTabs[0].id, {active: true});
+    }
+  },
+
   async searchTabs(text){
     if (text.length < 3){
       return [];
@@ -201,7 +219,7 @@ const BackgroundLogic = {
       tabs.forEach(tabObject => {
         if (tabObject.title.toLowerCase().indexOf(text) != -1) {
           suggestions.push({
-            content: `${workspace.id}:${tabObject.id}`,
+            content: `${workspace.id}:${tabObject.index}`,
             description: tabObject.title
           });
         }
