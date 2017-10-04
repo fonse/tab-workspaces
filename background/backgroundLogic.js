@@ -16,6 +16,8 @@ const BackgroundLogic = {
 
     browser.tabs.onCreated.addListener(BackgroundLogic.updateContextMenu);
     browser.tabs.onRemoved.addListener(BackgroundLogic.updateContextMenu);
+
+    browser.omnibox.onInputChanged.addListener(BackgroundLogic.handleAwesomebarSearch);
   },
 
   async getWorkspacesForCurrentWindow(){
@@ -178,6 +180,36 @@ const BackgroundLogic = {
     }
 
     await BackgroundLogic.moveTabToWorkspace(tab, destinationWorkspace);
+  },
+
+  async handleAwesomebarSearch(text, suggest){
+    suggest(await BackgroundLogic.searchTabs(text));
+  },
+
+  async searchTabs(text){
+    if (text.length < 3){
+      return [];
+    }
+
+    text = text.toLowerCase();
+    const suggestions = [];
+
+    // TODO Do this for other windows?
+    const workspaces = await BackgroundLogic.getWorkspacesForCurrentWindow();
+    const promises = workspaces.map(async workspace => {
+      const tabs = await workspace.getTabs();
+      tabs.forEach(tabObject => {
+        if (tabObject.title.toLowerCase().indexOf(text) != -1) {
+          suggestions.push({
+            content: `${workspace.id}:${tabObject.id}`,
+            description: tabObject.title
+          });
+        }
+      });
+    });
+
+    await Promise.all(promises);
+    return suggestions;
   }
 
 };
