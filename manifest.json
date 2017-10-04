@@ -13,6 +13,7 @@
 
   "permissions": [
     "menus",
+    "omnibox",
     "storage",
     "tabs"
   ],
@@ -41,5 +42,9 @@
       "background/workspaceStorage.js",
       "background/messageHandler.js"
     ]
+  },
+
+  "omnibox": {
+    "keyword": "ws"
   }
 }

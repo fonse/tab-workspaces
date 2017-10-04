@@ -26,7 +26,7 @@ class Workspace {
     await this.storeState();
   }
 
-  async getTabCount() {
+  async getTabs() {
     if (this.active){
       // Not counting pinned tabs. Should we?
       const currentWindow = await browser.windows.getCurrent();
@@ -35,15 +35,15 @@ class Workspace {
         windowId: currentWindow.id
       });
 
-      return tabs.length;
+      return tabs;
     } else {
-      return this.hiddenTabs.length;
+      return this.hiddenTabs;
     }
   }
 
   async toObject() {
     const obj = Object.assign({}, this);
-    obj.tabCount = await this.getTabCount();
+    obj.tabCount = (await this.getTabs()).length;
 
     return obj;
   }
