@@ -112,7 +112,7 @@ const Logic = {
       if (workspace.active){
         li.classList.add("active");
       }
-      li.textContent = workspace.name;
+      li.innerHTML = workspace.name + ` <span class="tabs-qty">${workspace.tabCount}</span>`;
       li.dataset.workspaceId = workspace.id;
       fragment.appendChild(li);
     });

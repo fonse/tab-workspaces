@@ -13,6 +13,9 @@ const BackgroundLogic = {
         BackgroundLogic.updateContextMenu();
       }
     });
+
+    browser.tabs.onCreated.addListener(BackgroundLogic.updateContextMenu);
+    browser.tabs.onRemoved.addListener(BackgroundLogic.updateContextMenu);
   },
 
   async getWorkspacesForCurrentWindow(){
@@ -141,9 +144,10 @@ const BackgroundLogic = {
     });
 
     const workspaces = await BackgroundLogic.getWorkspacesForCurrentWindow();
-    workspaces.forEach(workspace => {
+    const workspaceObjects = await Promise.all(workspaces.map(workspace => workspace.toObject()));
+    workspaceObjects.forEach(workspace => {
       browser.menus.create({
-        title: workspace.name,
+        title: workspace.name + ` (${workspace.tabCount} tabs)`,
         parentId: menuId,
         id: workspace.id,
         enabled: !workspace.active,
