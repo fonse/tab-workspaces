@@ -89,9 +89,10 @@ li.workspace-list-entry {
   width: calc(100% - 30px);
   cursor: pointer;
   border-radius: 4px;
-  overflow: hidden;
   transition: all .7s cubic-bezier(0.770, 0.000, 0.175, 1.000);
   font-size: .8em;
+  position: relative;
+  z-index: 1;
 }
 
 li.workspace-list-entry.active::after {
@@ -104,7 +105,6 @@ li.workspace-list-entry:hover {
 }
 
 li.workspace-edit-entry {
-  position: relative;
   background: white;
   box-shadow: 0 5px 10px rgba(0,0,0,.1);
   margin: 15px 10px 0;
@@ -112,9 +112,10 @@ li.workspace-edit-entry {
   width: calc(100% - 20px);
   cursor: pointer;
   border-radius: 4px;
-  overflow: hidden;
   transition: all .7s cubic-bezier(0.770, 0.000, 0.175, 1.000);
   font-size: .8em;
+  position: relative;
+  z-index: 1;
 }
 
 li.workspace-edit-entry input {
@@ -149,6 +150,28 @@ li.workspace-edit-entry a.edit-button-delete {
 
 li:only-child.workspace-edit-entry a.edit-button-delete {
   opacity: 0.5;
+}
+
+li.workspace-list-entry .tabs-qty,
+li.workspace-edit-entry .tabs-qty {
+  position: absolute;
+  display: inline-block;
+  text-align: center;
+  top: 0;
+  left: 0;
+  background-color: #FF9A8B;
+  background-image: linear-gradient(90deg, #FF9A8B 0%, #FF6A88 100%);    
+  border-radius: 10px;
+  color: white;
+  font-weight: bold;
+  font-size: .875em;
+  min-width: 18px;
+  padding: 3px 4px;
+  top: -5px;
+  right: -5px;
+  bottom: auto;
+  left: auto;
+  z-index: 2;
 }
 
 .footer-container {
