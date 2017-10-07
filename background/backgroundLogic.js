@@ -159,6 +159,11 @@ const BackgroundLogic = {
     });
 
     browser.menus.create({
+      parentId: menuId,
+      type: "separator"
+    });
+
+    browser.menus.create({
       title: "Create new workspace",
       parentId: menuId,
       id: "new-" + menuId,
