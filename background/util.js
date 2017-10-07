@@ -17,6 +17,12 @@ const Util = {
     )
   },
 
+  matchesQuery(subject, query){
+    return query.split(" ")
+      .filter(token => token)
+      .every(token => subject.toLowerCase().indexOf(token.toLowerCase()) != -1);
+  },
+
   flattenArray(arr) {
     return arr.reduce(
       (acc, cur) => acc.concat(cur),

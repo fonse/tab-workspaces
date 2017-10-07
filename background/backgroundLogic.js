@@ -229,7 +229,7 @@ const BackgroundLogic = {
     const promises = workspaces.map(async workspace => {
       const tabs = await workspace.getTabs();
       tabs.forEach(tab => {
-        if (tab.title.toLowerCase().indexOf(text) != -1) {
+        if (Util.matchesQuery(tab.title, text)) {
           suggestions.push({
             content: `${windowId}:${workspace.id}:${tab.index}`,
             description: tab.title
