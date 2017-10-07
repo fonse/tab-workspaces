@@ -1,13 +1,23 @@
 class Workspace {
-  constructor(id, name, active, hiddenTabs) {
+  constructor(id, state) {
     this.id = id;
-    this.name = name;
-    this.active = active;
-    this.hiddenTabs = hiddenTabs;
+
+    if (state){
+      this.name = state.name;
+      this.active = state.active;
+      this.hiddenTabs = state.hiddenTabs;
+      this.windowId = state.windowId;
+    }
   }
 
   static async create(windowId, name, active) {
-    const workspace = new Workspace(Util.generateUUID(), name, active || false, []);
+    const workspace = new Workspace(Util.generateUUID(), {
+      name: name,
+      active: active || false,
+      hiddenTabs: [],
+      windowId: windowId
+    });
+
     await workspace.storeState();
     await WorkspaceStorage.registerWorkspaceToWindow(windowId, workspace.id);
 
@@ -26,13 +36,12 @@ class Workspace {
     await this.storeState();
   }
 
-  async getTabs(suggestedWindowId) {
+  async getTabs() {
     if (this.active){
       // Not counting pinned tabs. Should we?
-      const currentWindow = await browser.windows.getCurrent();
       const tabs = await browser.tabs.query({
         pinned: false,
-        windowId: suggestedWindowId || currentWindow.id
+        windowId: this.windowId
       });
 
       return tabs;
@@ -49,9 +58,9 @@ class Workspace {
   }
 
   // Store hidden tabs in storage
-  async prepareToHide(windowId) {
+  async prepareToHide() {
     const tabs = await browser.tabs.query({
-      windowId: windowId,
+      windowId: this.windowId,
       pinned: false
     });
 
@@ -61,7 +70,7 @@ class Workspace {
   }
 
   // Then remove the tabs from the window
-  async hide(windowId) {
+  async hide() {
     this.active = false;
     await this.storeState();
 
@@ -69,7 +78,7 @@ class Workspace {
     await browser.tabs.remove(tabIds);
   }
 
-  async show(windowId) {
+  async show() {
     const tabs = this.hiddenTabs.filter(tab => Util.isPermissibleURL(tab.url));
 
     if (tabs.length == 0){
@@ -84,7 +93,7 @@ class Workspace {
         url: tab.url,
         active: tab.active,
         cookieStoreId: tab.cookieStoreId,
-        windowId: windowId
+        windowId: this.windowId
       });
     });
 
@@ -96,9 +105,9 @@ class Workspace {
   }
 
   // Then remove the tabs from the window
-  async delete(windowId) {
+  async delete() {
     await WorkspaceStorage.deleteWorkspaceState(this.id);
-    await WorkspaceStorage.unregisterWorkspaceToWindow(windowId, this.id);
+    await WorkspaceStorage.unregisterWorkspaceToWindow(this.windowId, this.id);
   }
 
   async attachTab(tab) {
@@ -130,13 +139,22 @@ class Workspace {
     this.name = state.name;
     this.active = state.active;
     this.hiddenTabs = state.hiddenTabs;
+    this.windowId = state.windowId;
+
+    // For backwards compatibility
+    if (!this.windowId){
+      console.log("Backwards compatibility for",this.name);
+      this.windowId = (await browser.windows.getCurrent()).id;
+      await this.storeState();
+    }
   }
 
   async storeState() {
     await WorkspaceStorage.storeWorkspaceState(this.id, {
       name: this.name,
       active: this.active,
-      hiddenTabs: this.hiddenTabs
+      hiddenTabs: this.hiddenTabs,
+      windowId: this.windowId
     });
   }
 }

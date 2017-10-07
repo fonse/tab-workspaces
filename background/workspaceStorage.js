@@ -1,18 +1,5 @@
 const WorkspaceStorage = {
 
-  // Deprecated
-  async fetchWorkspace(workspaceId) {
-    const key = `workspaces@${workspaceId}`;
-    const results = await browser.storage.local.get(key);
-
-    if (results[key]){
-      const state = results[key];
-      return new Workspace(workspaceId, state.name, state.active, state.hiddenTabs);
-    } else {
-      return null;
-    }
-  },
-
   async fetchWorkspaceState(workspaceId) {
     const key = `workspaces@${workspaceId}`;
     const results = await browser.storage.local.get(key);
@@ -51,7 +38,8 @@ const WorkspaceStorage = {
 
     const workspaceIds = results[key] || [];
     const promises = workspaceIds.map(async workspaceId => {
-      return await WorkspaceStorage.fetchWorkspace(workspaceId);
+      const state = await WorkspaceStorage.fetchWorkspaceState(workspaceId);
+      return new Workspace(workspaceId, state);
     });
 
     return await Promise.all(promises);

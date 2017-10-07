@@ -73,9 +73,9 @@ const BackgroundLogic = {
 
     // Since we're gonna be closing all open tabs, we need to show the new ones first.
     // However, we first need to prepare the old one, so it can tell which tabs were the original ones and which were opened by the new workspace.
-    await oldWorkspace.prepareToHide(windowId);
-    await newWorkspace.show(windowId);
-    await oldWorkspace.hide(windowId);
+    await oldWorkspace.prepareToHide();
+    await newWorkspace.show();
+    await oldWorkspace.hide();
   },
 
   async renameWorkspace(workspaceId, workspaceName) {
@@ -97,7 +97,7 @@ const BackgroundLogic = {
       await BackgroundLogic.switchToWorkspace(nextWorkspaceId);
     }
 
-    await workspaceToDelete.delete(windowId);
+    await workspaceToDelete.delete();
 
     // Re-render context menu
     BackgroundLogic.updateContextMenu();
@@ -227,7 +227,7 @@ const BackgroundLogic = {
 
     const workspaces = await BackgroundLogic.getWorkspacesForWindow(windowId);
     const promises = workspaces.map(async workspace => {
-      const tabs = await workspace.getTabs(windowId);
+      const tabs = await workspace.getTabs();
       tabs.forEach(tab => {
         if (tab.title.toLowerCase().indexOf(text) != -1) {
           suggestions.push({
