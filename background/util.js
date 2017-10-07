@@ -17,6 +17,19 @@ const Util = {
     )
   },
 
+  matchesQuery(subject, query){
+    return query.split(" ")
+      .filter(token => token)
+      .every(token => subject.toLowerCase().indexOf(token.toLowerCase()) != -1);
+  },
+
+  flattenArray(arr) {
+    return arr.reduce(
+      (acc, cur) => acc.concat(cur),
+      []
+    );
+  },
+
   // From https://gist.github.com/nmsdvid/8807205
   debounce(func, wait, immediate) {
   	var timeout;

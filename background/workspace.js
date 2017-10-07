@@ -1,13 +1,23 @@
 class Workspace {
-  constructor(id, name, active, hiddenTabs) {
+  constructor(id, state) {
     this.id = id;
-    this.name = name;
-    this.active = active;
-    this.hiddenTabs = hiddenTabs;
+
+    if (state){
+      this.name = state.name;
+      this.active = state.active;
+      this.hiddenTabs = state.hiddenTabs;
+      this.windowId = state.windowId;
+    }
   }
 
   static async create(windowId, name, active) {
-    const workspace = new Workspace(Util.generateUUID(), name, active || false, []);
+    const workspace = new Workspace(Util.generateUUID(), {
+      name: name,
+      active: active || false,
+      hiddenTabs: [],
+      windowId: windowId
+    });
+
     await workspace.storeState();
     await WorkspaceStorage.registerWorkspaceToWindow(windowId, workspace.id);
 
@@ -26,30 +36,50 @@ class Workspace {
     await this.storeState();
   }
 
+  async getTabs() {
+    if (this.active){
+      // Not counting pinned tabs. Should we?
+      const tabs = await browser.tabs.query({
+        pinned: false,
+        windowId: this.windowId
+      });
+
+      return tabs;
+    } else {
+      return this.hiddenTabs;
+    }
+  }
+
+  async toObject() {
+    const obj = Object.assign({}, this);
+    obj.tabCount = (await this.getTabs()).length;
+
+    return obj;
+  }
+
   // Store hidden tabs in storage
-  async prepareToHide(windowId) {
+  async prepareToHide() {
     const tabs = await browser.tabs.query({
-      windowId: windowId,
+      windowId: this.windowId,
       pinned: false
     });
 
     tabs.forEach(tab => {
-      const tabObject = Object.assign({}, tab);
-      this.hiddenTabs.push(tabObject);
+      this.hiddenTabs.push(tab);
     })
   }
 
   // Then remove the tabs from the window
-  async hide(windowId) {
+  async hide() {
     this.active = false;
     await this.storeState();
 
     const tabIds = this.hiddenTabs.map(tab => tab.id);
-    browser.tabs.remove(tabIds);
+    await browser.tabs.remove(tabIds);
   }
 
-  async show(windowId) {
-    const tabs = this.hiddenTabs.filter(tabObject => Util.isPermissibleURL(tabObject.url));
+  async show() {
+    const tabs = this.hiddenTabs.filter(tab => Util.isPermissibleURL(tab.url));
 
     if (tabs.length == 0){
       tabs.push({
@@ -58,12 +88,12 @@ class Workspace {
       });
     }
 
-    const promises = tabs.map(tabObject => {
+    const promises = tabs.map(tab => {
       return browser.tabs.create({
-        url: tabObject.url,
-        active: tabObject.active,
-        cookieStoreId: tabObject.cookieStoreId,
-        windowId: windowId
+        url: tab.url,
+        active: tab.active,
+        cookieStoreId: tab.cookieStoreId,
+        windowId: this.windowId
       });
     });
 
@@ -75,14 +105,13 @@ class Workspace {
   }
 
   // Then remove the tabs from the window
-  async delete(windowId) {
+  async delete() {
     await WorkspaceStorage.deleteWorkspaceState(this.id);
-    await WorkspaceStorage.unregisterWorkspaceToWindow(windowId, this.id);
+    await WorkspaceStorage.unregisterWorkspaceToWindow(this.windowId, this.id);
   }
 
   async attachTab(tab) {
-    const tabObject = Object.assign({}, tab);
-    this.hiddenTabs.push(tabObject);
+    this.hiddenTabs.push(tab);
 
     await this.storeState();
   }
@@ -96,7 +125,7 @@ class Workspace {
       await browser.tabs.remove(tab.id);
     } else {
       // Otherwise, forget it from hiddenTabs
-      const index = this.hiddenTabs.findIndex(tabObject => tabObject.id == tab.id);
+      const index = this.hiddenTabs.findIndex(hiddenTab => hiddenTab.id == tab.id);
       if (index > -1){
         this.hiddenTabs.splice(index, 1);
         await this.storeState();
@@ -110,13 +139,22 @@ class Workspace {
     this.name = state.name;
     this.active = state.active;
     this.hiddenTabs = state.hiddenTabs;
+    this.windowId = state.windowId;
+
+    // For backwards compatibility
+    if (!this.windowId){
+      console.log("Backwards compatibility for",this.name);
+      this.windowId = (await browser.windows.getCurrent()).id;
+      await this.storeState();
+    }
   }
 
   async storeState() {
     await WorkspaceStorage.storeWorkspaceState(this.id, {
       name: this.name,
       active: this.active,
-      hiddenTabs: this.hiddenTabs
+      hiddenTabs: this.hiddenTabs,
+      windowId: this.windowId
     });
   }
 }

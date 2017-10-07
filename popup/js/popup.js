@@ -114,6 +114,12 @@ const Logic = {
       }
       li.textContent = workspace.name;
       li.dataset.workspaceId = workspace.id;
+
+      const span = document.createElement("span");
+      span.classList.add("tabs-qty");
+      span.textContent = workspace.tabCount;
+      li.appendChild(span);
+
       fragment.appendChild(li);
     });
 

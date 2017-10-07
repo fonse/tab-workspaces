@@ -13,6 +13,12 @@ const BackgroundLogic = {
         BackgroundLogic.updateContextMenu();
       }
     });
+
+    browser.tabs.onCreated.addListener(BackgroundLogic.updateContextMenu);
+    browser.tabs.onRemoved.addListener(BackgroundLogic.updateContextMenu);
+
+    browser.omnibox.onInputChanged.addListener(BackgroundLogic.handleAwesomebarSearch);
+    browser.omnibox.onInputEntered.addListener(BackgroundLogic.handleAwesomebarSelection);
   },
 
   async getWorkspacesForCurrentWindow(){
@@ -67,9 +73,9 @@ const BackgroundLogic = {
 
     // Since we're gonna be closing all open tabs, we need to show the new ones first.
     // However, we first need to prepare the old one, so it can tell which tabs were the original ones and which were opened by the new workspace.
-    await oldWorkspace.prepareToHide(windowId);
-    await newWorkspace.show(windowId);
-    await oldWorkspace.hide(windowId);
+    await oldWorkspace.prepareToHide();
+    await newWorkspace.show();
+    await oldWorkspace.hide();
   },
 
   async renameWorkspace(workspaceId, workspaceName) {
@@ -91,7 +97,7 @@ const BackgroundLogic = {
       await BackgroundLogic.switchToWorkspace(nextWorkspaceId);
     }
 
-    await workspaceToDelete.delete(windowId);
+    await workspaceToDelete.delete();
 
     // Re-render context menu
     BackgroundLogic.updateContextMenu();
@@ -141,14 +147,20 @@ const BackgroundLogic = {
     });
 
     const workspaces = await BackgroundLogic.getWorkspacesForCurrentWindow();
-    workspaces.forEach(workspace => {
+    const workspaceObjects = await Promise.all(workspaces.map(workspace => workspace.toObject()));
+    workspaceObjects.forEach(workspace => {
       browser.menus.create({
-        title: workspace.name,
+        title: `${workspace.name} (${workspace.tabCount} tabs)`,
         parentId: menuId,
         id: workspace.id,
         enabled: !workspace.active,
         onclick: BackgroundLogic.handleContextMenuClick
       });
+    });
+
+    browser.menus.create({
+      parentId: menuId,
+      type: "separator"
     });
 
     browser.menus.create({
@@ -174,6 +186,60 @@ const BackgroundLogic = {
     }
 
     await BackgroundLogic.moveTabToWorkspace(tab, destinationWorkspace);
+  },
+
+  async handleAwesomebarSearch(text, suggest){
+    suggest(await BackgroundLogic.searchTabs(text));
+  },
+
+  async handleAwesomebarSelection(content, disposition){
+    let windowId, workspaceId, tabIndex;
+    [windowId, workspaceId, tabIndex] = content.split(':');
+
+    await browser.windows.update(parseInt(windowId), {focused: true});
+
+    const workspace = await Workspace.find(workspaceId);
+    await BackgroundLogic.switchToWorkspace(workspace.id);
+
+    const matchedTabs = await browser.tabs.query({
+      windowId: parseInt(windowId),
+      index: parseInt(tabIndex)
+    });
+
+    if (matchedTabs.length > 0){
+      await browser.tabs.update(matchedTabs[0].id, {active: true});
+    }
+  },
+
+  async searchTabs(text){
+    if (text.length < 3){
+      return [];
+    }
+
+    const windows = await browser.windows.getAll({windowTypes: ['normal']})
+    const promises = windows.map(windowInfo => BackgroundLogic.searchTabsInWindow(text, windowInfo.id));
+
+    return Util.flattenArray(await Promise.all(promises));
+  },
+
+  async searchTabsInWindow(text, windowId){
+    const suggestions = [];
+
+    const workspaces = await BackgroundLogic.getWorkspacesForWindow(windowId);
+    const promises = workspaces.map(async workspace => {
+      const tabs = await workspace.getTabs();
+      tabs.forEach(tab => {
+        if (Util.matchesQuery(tab.title, text)) {
+          suggestions.push({
+            content: `${windowId}:${workspace.id}:${tab.index}`,
+            description: tab.title
+          });
+        }
+      });
+    });
+
+    await Promise.all(promises);
+    return suggestions;
   }
 
 };
