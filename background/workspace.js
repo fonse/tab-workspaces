@@ -56,8 +56,7 @@ class Workspace {
     });
 
     tabs.forEach(tab => {
-      const tabObject = Object.assign({}, tab);
-      this.hiddenTabs.push(tabObject);
+      this.hiddenTabs.push(tab);
     })
   }
 
@@ -71,7 +70,7 @@ class Workspace {
   }
 
   async show(windowId) {
-    const tabs = this.hiddenTabs.filter(tabObject => Util.isPermissibleURL(tabObject.url));
+    const tabs = this.hiddenTabs.filter(tab => Util.isPermissibleURL(tab.url));
 
     if (tabs.length == 0){
       tabs.push({
@@ -80,11 +79,11 @@ class Workspace {
       });
     }
 
-    const promises = tabs.map(tabObject => {
+    const promises = tabs.map(tab => {
       return browser.tabs.create({
-        url: tabObject.url,
-        active: tabObject.active,
-        cookieStoreId: tabObject.cookieStoreId,
+        url: tab.url,
+        active: tab.active,
+        cookieStoreId: tab.cookieStoreId,
         windowId: windowId
       });
     });
@@ -103,8 +102,7 @@ class Workspace {
   }
 
   async attachTab(tab) {
-    const tabObject = Object.assign({}, tab);
-    this.hiddenTabs.push(tabObject);
+    this.hiddenTabs.push(tab);
 
     await this.storeState();
   }
@@ -118,7 +116,7 @@ class Workspace {
       await browser.tabs.remove(tab.id);
     } else {
       // Otherwise, forget it from hiddenTabs
-      const index = this.hiddenTabs.findIndex(tabObject => tabObject.id == tab.id);
+      const index = this.hiddenTabs.findIndex(hiddenTab => hiddenTab.id == tab.id);
       if (index > -1){
         this.hiddenTabs.splice(index, 1);
         await this.storeState();

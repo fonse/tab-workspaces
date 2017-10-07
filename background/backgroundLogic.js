@@ -150,7 +150,7 @@ const BackgroundLogic = {
     const workspaceObjects = await Promise.all(workspaces.map(workspace => workspace.toObject()));
     workspaceObjects.forEach(workspace => {
       browser.menus.create({
-        title: workspace.name + ` (${workspace.tabCount} tabs)`,
+        title: `${workspace.name} (${workspace.tabCount} tabs)`,
         parentId: menuId,
         id: workspace.id,
         enabled: !workspace.active,
@@ -228,11 +228,11 @@ const BackgroundLogic = {
     const workspaces = await BackgroundLogic.getWorkspacesForWindow(windowId);
     const promises = workspaces.map(async workspace => {
       const tabs = await workspace.getTabs(windowId);
-      tabs.forEach(tabObject => {
-        if (tabObject.title.toLowerCase().indexOf(text) != -1) {
+      tabs.forEach(tab => {
+        if (tab.title.toLowerCase().indexOf(text) != -1) {
           suggestions.push({
-            content: `${windowId}:${workspace.id}:${tabObject.index}`,
-            description: tabObject.title
+            content: `${windowId}:${workspace.id}:${tab.index}`,
+            description: tab.title
           });
         }
       });
