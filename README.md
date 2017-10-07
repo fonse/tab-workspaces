@@ -12,6 +12,7 @@ This extension aims to be an alternative to [Tab Groups](https://addons.mozilla.
  - If you have multiple windows open, each one has its own set of workspaces.
  - Send a specific tab to another workspace from the right-click menu.
  - Press Ctrl+E to open the list of workspaces, then press 1-9 to switch between using keyboard shortcuts.
+ - Search through your tabs in the address bar. Type "ws [text]" to begin searching. Choose a result to switch to that tab.
 
 ## Notice
 There is no way to "hide" a tab with the WebExtensions API, so when switching between workspaces the tabs are actually closed and reopened.
@@ -19,12 +20,6 @@ There is no way to "hide" a tab with the WebExtensions API, so when switching be
 This has the side effect of not maintaining the tabs' history, as well as stopping whatever process is going on when the tab is closed.
 
 If you know any better way to hide the tabs, please let me know.
-
-# Future Improvements
-I'm planning to add the following features in the near future:
-
-- UI improvements
-- Suggest tabs from other workspaces in the awesomebar
 
 ## Acknowledgements
 This extension was inspired by [Multi-Account Containers](https://addons.mozilla.org/en-US/firefox/addon/multi-account-containers/), which also served as a reference for some of the functionality.
